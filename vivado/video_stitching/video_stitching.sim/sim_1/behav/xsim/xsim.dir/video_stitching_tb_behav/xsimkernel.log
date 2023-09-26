@@ -1,7 +1,0 @@
-Running: xsim.dir/video_stitching_tb_behav/xsimk.exe -simmode gui -wdb video_stitching_tb_behav.wdb -simrunnum 0 -socket 14563
-Design successfully loaded
-Design Loading Memory Usage: 25280 KB (Peak: 25280 KB)
-Design Loading CPU Usage: 0 ms
-Simulation completed
-Simulation Memory Usage: 34040 KB (Peak: 34040 KB)
-Simulation CPU Usage: 718 ms
