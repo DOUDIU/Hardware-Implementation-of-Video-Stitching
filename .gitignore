@@ -1,0 +1,3 @@
+vivado/video_stitching/*
+!vivado/video_stitching/video_stitching.xpr
+!vivado/video_stitching/video_stitching_tb_behav.wcfg

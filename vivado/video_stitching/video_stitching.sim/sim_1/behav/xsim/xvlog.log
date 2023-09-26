@@ -1,0 +1,6 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "E:/github/fpga_project/video_stitching/RTL/sim_1/new/sim_cmos_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module sim_cmos
+WARNING: [VRFC 10-3380] identifier 'IMG_HDISP' is used before its declaration [E:/github/fpga_project/video_stitching/RTL/sim_1/new/sim_cmos_tb.sv:28]
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/github/fpga_project/video_stitching/RTL/sim_1/new/video_stitching_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module video_stitching_tb
+WARNING: [VRFC 10-8956] extra semicolon is not allowed here in this dialect; use SystemVerilog mode instead [E:/github/fpga_project/video_stitching/RTL/sim_1/new/video_stitching_tb.v:37]
