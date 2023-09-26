@@ -1,6 +1,8 @@
-`timescale 1ns / 1ns
-
-module sim_cmos(
+module sim_cmos#(
+		parameter PIC_PATH = "../../../../../../pic/duck_fog.bmp"
+	,	parameter IMG_HDISP = 11'd640
+	,	parameter IMG_VDISP = 11'd480
+)(
 		input			clk
 	, 	input			rst_n
 
@@ -11,7 +13,7 @@ module sim_cmos(
 	,	output  [10:0]	X_POS
 	,	output  [10:0]	Y_POS
 );
- 
+
 integer iBmpFileId;                 
 
 integer oTxtFileId;                 
@@ -41,42 +43,26 @@ reg [ 7:0] vip_pixel_data   [0:BMP_SIZE];
 
 integer i,j;
 
-`ifndef Modelsim_Sim
-	//---------------------------------------------
-	initial begin
-		iBmpFileId	= 	$fopen("../../../../../../pic/duck_fog.bmp","rb");
 
-		iCode = $fread(rBmpData,iBmpFileId);
+//---------------------------------------------
+initial begin
+	iBmpFileId	= 	$fopen(PIC_PATH,"rb");
+
+	iCode = $fread(rBmpData,iBmpFileId);
+
+	//根据BMP图片文件头的格式，分别计算出图片的 宽度 /高度 /像素数据偏移量 /图片字节数
+	iBmpWidth       = {rBmpData[21],rBmpData[20],rBmpData[19],rBmpData[18]};
+	iBmpHight       = {rBmpData[25],rBmpData[24],rBmpData[23],rBmpData[22]};
+	iBmpSize        = {rBmpData[ 5],rBmpData[ 4],rBmpData[ 3],rBmpData[ 2]};
+	iDataStartIndex = {rBmpData[13],rBmpData[12],rBmpData[11],rBmpData[10]};
 	
-		//根据BMP图片文件头的格式，分别计算出图片的 宽度 /高度 /像素数据偏移量 /图片字节数
-		iBmpWidth       = {rBmpData[21],rBmpData[20],rBmpData[19],rBmpData[18]};
-		iBmpHight       = {rBmpData[25],rBmpData[24],rBmpData[23],rBmpData[22]};
-		iBmpSize        = {rBmpData[ 5],rBmpData[ 4],rBmpData[ 3],rBmpData[ 2]};
-		iDataStartIndex = {rBmpData[13],rBmpData[12],rBmpData[11],rBmpData[10]};
-		
-		//关闭输入BMP图片
-		$fclose(iBmpFileId);
+	//关闭输入BMP图片
+	$fclose(iBmpFileId);
+	if((iBmpWidth!= IMG_HDISP) | (iBmpHight!=IMG_VDISP)) begin
+		$display("Resolution mismatching.\n");
+		$finish;
 	end
-`else
-	//---------------------------------------------
-	initial begin
-
-		//打开输入BMP图片
-		iBmpFileId      = $fopen("..\\..\\pic\\duck_fog.bmp","rb");	
-
-		//将输入BMP图片加载到数组中 21_Su_A65NF7
-		iCode = $fread(rBmpData,iBmpFileId);
-	
-		//根据BMP图片文件头的格式，分别计算出图片的 宽度 /高度 /像素数据偏移量 /图片字节数
-		iBmpWidth       = {rBmpData[21],rBmpData[20],rBmpData[19],rBmpData[18]};
-		iBmpHight       = {rBmpData[25],rBmpData[24],rBmpData[23],rBmpData[22]};
-		iBmpSize        = {rBmpData[ 5],rBmpData[ 4],rBmpData[ 3],rBmpData[ 2]};
-		iDataStartIndex = {rBmpData[13],rBmpData[12],rBmpData[11],rBmpData[10]};
-		
-		//关闭输入BMP图片
-		$fclose(iBmpFileId);
-	end
-`endif
+end
 
 
  
@@ -91,9 +77,6 @@ reg	[23:0]	cmos_data;
 reg         cmos_clken_r;
 
 reg [31:0]  cmos_index;
-
-parameter [10:0] IMG_HDISP = 11'd640;
-parameter [10:0] IMG_VDISP = 11'd480;
 
 localparam H_SYNC = 11'd10;		
 localparam H_BACK = 11'd10;		

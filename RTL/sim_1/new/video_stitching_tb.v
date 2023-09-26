@@ -34,12 +34,16 @@ wire [10:0] cmos0_y_pos  ;
 
 parameter cmos0_period = 20;
 reg cmos0_clk = 0;
-reg cmos0_rst_n = 0;;
+reg cmos0_rst_n = 0;
 
 always#(cmos0_period/2) cmos0_clk = ~cmos0_clk;
 initial #(20*cmos0_period) cmos0_rst_n = 1;
 
-sim_cmos u_sim_cmos(
+sim_cmos #(
+		.PIC_PATH	("../../../../../../pic/duck_fog.bmp")
+	,	.IMG_HDISP 	(640)
+	,	.IMG_VDISP 	(480)
+)u_sim_cmos0(
         .clk            (cmos0_clk      )
     ,   .rst_n          (cmos0_rst_n    )
 	,   .CMOS_VSYNC     (cmos0_vsync    )

@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="562,572.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="563,561.001 ns"></ZoomEndTime>
-      <Cursor1Time time="562,830.000 ns"></Cursor1Time>
+      <ZoomStartTime time="13,347.666667 us"></ZoomStartTime>
+      <ZoomEndTime time="23,267.666668 us"></ZoomEndTime>
+      <Cursor1Time time="15,001.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="300"></NameColumnWidth>
-      <ValueColumnWidth column_width="250"></ValueColumnWidth>
+      <ValueColumnWidth column_width="244"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="9" />
    <wvobject fp_name="/video_stitching_tb/cmos0_clk" type="logic">
