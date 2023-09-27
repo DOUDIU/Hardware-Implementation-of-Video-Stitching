@@ -36,22 +36,9 @@ module video_to_fifo_ctrl(
     ,   output  [127:0] fifo_data_out
     ,   output  reg     fifo_enable
 
-    ,   output          AXI_FULL_BURST
+    ,   output  reg     AXI_FULL_BURST_VALID
+    ,   input           AXI_FULL_BURST_READY
 );
-
-
-// ila_0 u_ila_0 (
-// 	.clk(M_AXI_ACLK), // input wire clk
-
-
-// 	.probe0(video_vs_out    ), // input wire [0:0]  probe0  
-// 	.probe1(video_hs_out    ), // input wire [0:0]  probe1 
-// 	.probe2(video_de_out    ), // input wire [0:0]  probe2 
-// 	.probe3(video_data_out  ), // input wire [23:0]  probe3 
-// 	.probe4(AXI_FULL_BURST  ) // input wire [0:0]  probe4
-// );
-
-
 
 reg [127:0] fifo_data_out_buffer;
 reg [1:0]   buf_cnt;
@@ -59,7 +46,6 @@ reg     video_hs_out_d1;
 reg     video_hs_out_d2;
 
 assign  fifo_data_out   =   fifo_data_out_buffer;
-assign  AXI_FULL_BURST = !video_hs_out_d2 & video_hs_out_d1;
 
 always@(posedge video_clk or negedge video_rst_n) begin
     if(!video_rst_n) begin
@@ -103,6 +89,17 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
 end
 
 
+always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
+    if(!M_AXI_ARESETN) begin
+        AXI_FULL_BURST_VALID <=  0;
+    end 
+    else if(video_hs_out_d2 & !video_hs_out_d1)begin
+        AXI_FULL_BURST_VALID <=  1;
+    end
+    else if(AXI_FULL_BURST_VALID & AXI_FULL_BURST_READY) begin
+        AXI_FULL_BURST_VALID <=  0;
+    end
+end
 
 
 
