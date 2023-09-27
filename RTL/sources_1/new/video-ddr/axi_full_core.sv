@@ -185,12 +185,12 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // forward FIFO read interface
-    ,   output  wire           	frd_rdy  
-    ,   input   wire           	frd_vld  
-    ,   input   wire [FDW-1:0] 	frd_din  
-    ,   input   wire           	frd_empty
-    ,   input   wire [FAW:0] 	frd_cnt	
-	
+    ,   output  wire           	cmos_frd_rdy  	[0 : 2]
+    ,   input   wire           	cmos_frd_vld  	[0 : 2]
+    ,   input   wire [FDW-1:0] 	cmos_frd_din  	[0 : 2]
+    ,   input   wire           	cmos_frd_empty	[0 : 2]
+    ,   input   wire [FAW:0] 	cmos_frd_cnt	[0 : 2]
+
 //----------------------------------------------------
 // backward FIFO write interface
     ,   input   wire           	bwr_rdy  
@@ -214,7 +214,14 @@ module axi_full_core#(
 // cmos interface 
 	,	input	wire			cmos_vsync [0 : 2]
 );
-	integer i;
+
+	// C_TRANSACTIONS_NUM is the width of the index counter for 
+	// number of write or read transaction.
+	localparam integer C_TRANSACTIONS_NUM = clogb2(C_M_AXI_BURST_LEN-1);
+	//size of C_M_AXI_BURST_LEN length burst in bytes
+	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
+
+	genvar i;
 
 	parameter Cmos0_H = 1920;
 	parameter Cmos0_V = 1080;
@@ -222,6 +229,7 @@ module axi_full_core#(
 	parameter Cmos1_V = 540;
 	parameter Cmos2_H = 960;
 	parameter Cmos2_V = 540;
+
 
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos0;
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos1;
@@ -233,23 +241,49 @@ module axi_full_core#(
 	assign axi_awaddr_cmos1_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 - burst_size_bytes;
 	assign axi_awaddr_cmos2_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 - burst_size_bytes;
 
+	reg				cmos_vsync_d1[0:2];
+	reg				cmos_vsync_d2[0:2];
+	
+	reg				cmos_wr_buffer[0:2];
+	wire    		cmos_wr_buffer0_max;
+	reg	 	[2:0]	write_current_frame = 0;
+	
+	assign cmos_wr_buffer0_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4;
 
-	reg		cmos_vsync_d1[0:2];
-	reg		cmos_vsync_d2[0:2];
+	generate for(i = 0; i < 3 ;i = i + 1) begin
+		always @(posedge M_AXI_ACLK) begin
+			if (M_AXI_ARESETN == 0) begin
+				cmos_vsync_d1[i]	<=	0;
+				cmos_vsync_d2[i]	<=	0;                             
+			end                                                                               
+			else begin  
+				cmos_vsync_d1[i]	<=	cmos_vsync[i];
+				cmos_vsync_d2[i]	<=	cmos_vsync_d1[i];                                                                 
+			end                                                                      
+		end   
+	end
+	endgenerate
 
-generate for(i = 0; i < 3 ;i = i + 1) begin
-	always @(posedge M_AXI_ACLK) begin
-		if (M_AXI_ARESETN == 0) begin
-			cmos_vsync_d1[i]	<=	0;
-			cmos_vsync_d2[i]	<=	0;                             
-		end                                                                               
-		else begin  
-			cmos_vsync_d1[i]	<=	0;
-			cmos_vsync_d2[i]	<=	0;                                                                 
-		end                                                                      
-	end   
-end
-endgenerate
+	generate for(i = 0; i < 3 ;i = i + 1) begin
+		always @(posedge M_AXI_ACLK) begin
+			if (M_AXI_ARESETN == 0) begin
+				cmos_wr_buffer[i]	<=	0;                         
+			end                                                                               
+			else if(cmos_vsync_d2[i] & !cmos_vsync_d1[i]) begin  
+				cmos_wr_buffer[i]	<=	~cmos_wr_buffer[i];                                                                
+			end                                                                      
+		end   
+	end
+	endgenerate
+
+
+	wire			frd_rdy;
+
+	generate for(i = 0; i < 3 ;i = i + 1) begin
+		assign	cmos_frd_rdy[i] = frd_rdy & write_current_frame[i];
+	end
+	endgenerate
+
 
 	// function called clogb2 that returns an integer which has the
 	//value of the ceiling of the log base 2
@@ -263,9 +297,6 @@ endgenerate
 	    end                                                           
 	  endfunction                                                     
 
-	// C_TRANSACTIONS_NUM is the width of the index counter for 
-	// number of write or read transaction.
-	 localparam integer C_TRANSACTIONS_NUM = clogb2(C_M_AXI_BURST_LEN-1);
 
 	// Burst length for transactions, in C_M_AXI_DATA_WIDTHs.
 	// Non-2^n lengths will eventually cause bursts across 4K address boundaries.
@@ -299,10 +330,9 @@ endgenerate
 	reg [C_TRANSACTIONS_NUM : 0] 	write_index;
 	//read beat count in a burst
 	reg [C_TRANSACTIONS_NUM : 0] 	read_index;
-	//size of C_M_AXI_BURST_LEN length burst in bytes
-	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
 	//The burst counters are used to track the number of burst transfers of C_M_AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
 	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
+	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter_max;
 	reg [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
 	reg  	start_single_burst_write;
 	reg  	start_single_burst_read;
@@ -540,10 +570,20 @@ endgenerate
 		//else if (wnext && axi_wlast)                                                  
 		//  axi_wdata <= 'b0;      
 		else if (M_AXI_AWREADY && axi_awvalid) begin
-			axi_wdata <= frd_din;
+			case(write_current_frame)
+				3'b001: 	axi_wdata <= cmos_frd_din[0];
+				3'b010: 	axi_wdata <= cmos_frd_din[1];
+				3'b100: 	axi_wdata <= cmos_frd_din[2];
+				default:	axi_wdata <= 0;
+			endcase
 		end                                                     
-		else if (wnext) begin                                                                 
-			axi_wdata <= frd_din;
+		else if (wnext) begin         
+			case(write_current_frame)
+				3'b001: 	axi_wdata <= cmos_frd_din[0];
+				3'b010: 	axi_wdata <= cmos_frd_din[1];
+				3'b100: 	axi_wdata <= cmos_frd_din[2];
+				default:	axi_wdata <= 0;
+			endcase
 		end                                                   
 		else begin                                                                           
 			axi_wdata <= axi_wdata;
@@ -784,7 +824,7 @@ endgenerate
 			write_burst_counter <= 'b0;                                                                         
 		end                                                                                                   
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                                                                 
-			if (write_burst_counter <= (PIXELS_HORIZONTAL*32)/(FDW*C_M_AXI_BURST_LEN)) begin                                                         
+			if (write_burst_counter <= write_burst_counter_max) begin                                                         
 				write_burst_counter <= write_burst_counter + 1'b1;        
 			end                                  
 		end
@@ -809,7 +849,6 @@ endgenerate
 		end                                                        
 	end
 
-
 	//implement master command interface state machine                                                        
 
 	always @ ( posedge M_AXI_ACLK) begin                                                                                                     
@@ -822,6 +861,7 @@ endgenerate
 			axi_awaddr_cmos0	<=	0;
 			axi_awaddr_cmos1	<=	Cmos0_H * Cmos0_V * 4;
 			axi_awaddr_cmos2	<=	Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
+			write_current_frame	<=	0;
 		end
 		else begin                                                                                                 
 
@@ -836,21 +876,27 @@ endgenerate
 					case({cmos0_burst_valid,cmos1_burst_valid,cmos2_burst_valid})
 						3'b100,3'b101,3'b110,3'b111 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos0;
+							axi_awaddr	<=	axi_awaddr_cmos0 + cmos_wr_buffer[0] * cmos_wr_buffer0_max;
 							axi_awaddr_cmos0 <=	axi_awaddr_cmos0 >= axi_awaddr_cmos0_max ? 0 : axi_awaddr_cmos0 + Cmos0_H * 4;
+							write_burst_counter_max	<=	(Cmos0_H * Cmos0_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos0_burst_ready <= 1'b1;
+							write_current_frame <= 3'b001;
 						end
 						3'b010,3'b011 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos1;
+							axi_awaddr	<=	axi_awaddr_cmos1 + cmos_wr_buffer[1] * cmos_wr_buffer0_max;
 							axi_awaddr_cmos1 <=	axi_awaddr_cmos1 >= axi_awaddr_cmos1_max ? 0 : axi_awaddr_cmos1 + Cmos1_H * 4;
+							write_burst_counter_max	<=	(Cmos1_H * Cmos1_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos1_burst_ready <= 1'b1;
+							write_current_frame <= 3'b010;
 						end
 						3'b001: begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos2;
+							axi_awaddr	<=	axi_awaddr_cmos2 + cmos_wr_buffer[2] * cmos_wr_buffer0_max;
 							axi_awaddr_cmos2 <=	axi_awaddr_cmos2 >= axi_awaddr_cmos2_max? 0 : axi_awaddr_cmos2 + Cmos2_H * 4;
+							write_burst_counter_max	<=	(Cmos2_H * Cmos2_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos2_burst_ready <= 1'b1;
+							write_current_frame <= 3'b100;
 						end
 						default: begin
 							mst_exec_state  <= IDLE;
@@ -913,7 +959,7 @@ endgenerate
 																												
 		//The writes_done should be associated with a bready response                                           
 		//else if (M_AXI_BVALID && axi_bready && (write_burst_counter == {(C_NO_BURSTS_REQ-1){1}}) && axi_wlast)
-		else if (M_AXI_BVALID && (write_burst_counter == (PIXELS_HORIZONTAL*32)/(FDW*C_M_AXI_BURST_LEN)) && axi_bready)                          
+		else if (M_AXI_BVALID && (write_burst_counter == write_burst_counter_max) && axi_bready)                          
 			writes_done <= 1'b1;                                                                                  
 		else                                                                                                    
 			writes_done <= 0;                                                                           

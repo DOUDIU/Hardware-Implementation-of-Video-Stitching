@@ -22,7 +22,7 @@ module video_stiching_top#(
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   parameter integer C_M_AXI_BURST_LEN	= 32
+	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 1
 		// Width of Address Bus
@@ -46,34 +46,14 @@ module video_stiching_top#(
     ,   input           rst_n
 
 //----------------------------------------------------
-// Cmos0 port
-    ,   input           cmos0_clk
-    ,   input           cmos0_vsync  
-    ,   input           cmos0_href   
-    ,   input           cmos0_clken  
-    ,   input   [23:0]  cmos0_data   
-    ,   input   [10:0]  cmos0_x_pos  
-    ,   input   [10:0]  cmos0_y_pos  
-
-//----------------------------------------------------
-// Cmos1 port
-    ,   input           cmos1_clk
-    ,   input           cmos1_vsync  
-    ,   input           cmos1_href   
-    ,   input           cmos1_clken  
-    ,   input   [23:0]  cmos1_data   
-    ,   input   [10:0]  cmos1_x_pos  
-    ,   input   [10:0]  cmos1_y_pos  
-
-//----------------------------------------------------
-// Cmos2 port
-    ,   input           cmos2_clk
-    ,   input           cmos2_vsync  
-    ,   input           cmos2_href   
-    ,   input           cmos2_clken  
-    ,   input   [23:0]  cmos2_data   
-    ,   input   [10:0]  cmos2_x_pos  
-    ,   input   [10:0]  cmos2_y_pos  
+// Cmos port
+    ,   input           cmos_clk        [0 : 2]
+    ,   input           cmos_vsync      [0 : 2]    
+    ,   input           cmos_href       [0 : 2]    
+    ,   input           cmos_clken      [0 : 2]    
+    ,   input   [23:0]  cmos_data       [0 : 2]    
+    ,   input   [10:0]  cmos_x_pos      [0 : 2]    
+    ,   input   [10:0]  cmos_y_pos      [0 : 2]     
 
 //----------------------------------------------------
 // AXI-FULL master port
@@ -200,23 +180,15 @@ module video_stiching_top#(
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
 );
-wire    cmos0_burst_valid;
-wire    cmos0_burst_ready;
-wire    cmos0_fifo_wr_enable;
-wire    cmos0_fifo_wr_data_out;
-wire    cmos0_fifo_rd_enable;
-wire    cmos0_fifo_rd_data_out;
 
-wire    cmos1_burst_valid;
-wire    cmos1_burst_ready;
-wire    cmos1_fifo_wr_enable;
-wire    cmos1_fifo_wr_data_out;
+genvar i;
 
-wire    cmos2_burst_valid;
-wire    cmos2_burst_ready;
-wire    cmos2_fifo_wr_enable;
-wire    cmos2_fifo_wr_data_out;
-
+wire    cmos_burst_valid        [0 : 2];
+wire    cmos_burst_ready        [0 : 2];
+wire    cmos_fifo_wr_enable     [0 : 2];
+wire    cmos_fifo_wr_data_out   [0 : 2];
+wire    cmos_fifo_rd_enable     [0 : 2];
+wire    cmos_fifo_rd_data_out   [0 : 2];
 
 video_to_fifo_ctrl u_cmos0_to_fifo_ctrl(
         .video_rst_n            (rst_n                  )
@@ -284,8 +256,26 @@ axi_full_core #(
 
 //----------------------------------------------------
 // forward FIFO read interface
-        .frd_rdy            (fifo_rd_enable     )
-    ,   .frd_din            (fifo_rd_data_out   )
+        .cmos_frd_rdy  	    ()
+    ,   .cmos_frd_vld  	    ()
+    ,   .cmos_frd_din  	    ()
+    ,   .cmos_frd_empty	    ()
+    ,   .cmos_frd_cnt	    ()
+
+//----------------------------------------------------
+// cmos burst handshake 
+	,	.cmos0_burst_valid  ()      
+	,	.cmos0_burst_ready  ()     
+
+	,	.cmos1_burst_valid  ()      
+	,	.cmos1_burst_ready  ()   
+
+	,	.cmos2_burst_valid  ()      
+	,	.cmos2_burst_ready  ()   
+
+//----------------------------------------------------
+// cmos interface 
+	,	.cmos_vsync         ()
 
 //----------------------------------------------------
 // AXI-FULL master port

@@ -86,26 +86,12 @@ parameter integer AXI_BUSER_WIDTH	    = 0    ;
 ;
 
 
-wire        cmos0_vsync  ;
-wire        cmos0_href   ;
-wire        cmos0_clken  ;
-wire [23:0] cmos0_data   ;
-wire [10:0] cmos0_x_pos  ;
-wire [10:0] cmos0_y_pos  ;
-
-wire        cmos1_vsync  ;
-wire        cmos1_href   ;
-wire        cmos1_clken  ;
-wire [23:0] cmos1_data   ;
-wire [10:0] cmos1_x_pos  ;
-wire [10:0] cmos1_y_pos  ;
-
-wire        cmos2_vsync  ;
-wire        cmos2_href   ;
-wire        cmos2_clken  ;
-wire [23:0] cmos2_data   ;
-wire [10:0] cmos2_x_pos  ;
-wire [10:0] cmos2_y_pos  ;
+wire        cmos_vsync  [0 : 2];
+wire        cmos_href   [0 : 2];
+wire        cmos_clken  [0 : 2];
+wire [23:0] cmos_data   [0 : 2];
+wire [10:0] cmos_x_pos  [0 : 2];
+wire [10:0] cmos_y_pos  [0 : 2];
 
 parameter cmos0_period = 14;
 parameter cmos1_period = 20;
@@ -135,14 +121,14 @@ sim_cmos #(
 	,	.IMG_HDISP 	(1920)
 	,	.IMG_VDISP 	(1080)
 )u_sim_cmos0(
-        .clk            (cmos0_clk      )
-    ,   .rst_n          (cmos0_rst_n    )
-	,   .CMOS_VSYNC     (cmos0_vsync    )
-	,   .CMOS_HREF      (cmos0_href     )
-	,   .CMOS_CLKEN     (cmos0_clken    )
-	,   .CMOS_DATA      (cmos0_data     )
-	,   .X_POS          (cmos0_x_pos    )
-	,   .Y_POS          (cmos0_y_pos    )
+        .clk            (cmos_clk[0]	)
+    ,   .rst_n          (cmos_rst_n[0]	)
+	,   .CMOS_VSYNC     (cmos_vsync[0]	)
+	,   .CMOS_HREF      (cmos_href[0]	)
+	,   .CMOS_CLKEN     (cmos_clken[0]	)
+	,   .CMOS_DATA      (cmos_data[0]	)
+	,   .X_POS          (cmos_x_pos[0]	)
+	,   .Y_POS          (cmos_y_pos[0]	)
 );
 
 sim_cmos #(
@@ -151,14 +137,14 @@ sim_cmos #(
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
 )u_sim_cmos1(
-        .clk            (cmos1_clk      )
-    ,   .rst_n          (cmos1_rst_n    )
-	,   .CMOS_VSYNC     (cmos1_vsync    )
-	,   .CMOS_HREF      (cmos1_href     )
-	,   .CMOS_CLKEN     (cmos1_clken    )
-	,   .CMOS_DATA      (cmos1_data     )
-	,   .X_POS          (cmos1_x_pos    )
-	,   .Y_POS          (cmos1_y_pos    )
+        .clk            (cmos_clk[1]	)
+    ,   .rst_n          (cmos_rst_n[1]	)
+	,   .CMOS_VSYNC     (cmos_vsync[1]	)
+	,   .CMOS_HREF      (cmos_href[1]	)
+	,   .CMOS_CLKEN     (cmos_clken[1]	)
+	,   .CMOS_DATA      (cmos_data[1]	)
+	,   .X_POS          (cmos_x_pos[1]	)
+	,   .Y_POS          (cmos_y_pos[1]	)
 );
 
 sim_cmos #(
@@ -167,21 +153,21 @@ sim_cmos #(
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
 )u_sim_cmos2(
-        .clk            (cmos2_clk      )
-    ,   .rst_n          (cmos2_rst_n    )
-	,   .CMOS_VSYNC     (cmos2_vsync    )
-	,   .CMOS_HREF      (cmos2_href     )
-	,   .CMOS_CLKEN     (cmos2_clken    )
-	,   .CMOS_DATA      (cmos2_data     )
-	,   .X_POS          (cmos2_x_pos    )
-	,   .Y_POS          (cmos2_y_pos    )
+        .clk            (cmos_clk[2]	)
+    ,   .rst_n          (cmos_rst_n[2]	)
+	,   .CMOS_VSYNC     (cmos_vsync[2]	)
+	,   .CMOS_HREF      (cmos_href[2]	)
+	,   .CMOS_CLKEN     (cmos_clken[2]	)
+	,   .CMOS_DATA      (cmos_data[2]	)
+	,   .X_POS          (cmos_x_pos[2]	)
+	,   .Y_POS          (cmos_y_pos[2]	)
 );
 
 video_to_axi_top #(
         // Base address of targeted slave
 	    .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   .C_M_AXI_BURST_LEN	    ( 32 )
+	,   .C_M_AXI_BURST_LEN	    ( 16 )
 		// Thread ID Width
 	,   .C_M_AXI_ID_WIDTH	    ( 1 )
 		// Width of Address Bus
@@ -206,33 +192,13 @@ video_to_axi_top #(
 
 //----------------------------------------------------
 // Cmos0 port
-	,	.cmos0_clk				(cmos0_clk		)
-    ,   .cmos0_vsync 			(cmos0_vsync    )
-    ,   .cmos0_href  			(cmos0_href     )
-    ,   .cmos0_clken 			(cmos0_clken    )
-    ,   .cmos0_data  			(cmos0_data     )
-    ,   .cmos0_x_pos 			(cmos0_x_pos    )
-    ,   .cmos0_y_pos 			(cmos0_y_pos    )
-
-//----------------------------------------------------
-// Cmos1 port
-	,	.cmos1_clk				(cmos1_clk		)
-    ,   .cmos1_vsync  			(cmos1_vsync    )
-    ,   .cmos1_href   			(cmos1_href     )
-    ,   .cmos1_clken  			(cmos1_clken    )
-    ,   .cmos1_data   			(cmos1_data     )
-    ,   .cmos1_x_pos  			(cmos1_x_pos    )
-    ,   .cmos1_y_pos  			(cmos1_y_pos    )
-
-//----------------------------------------------------
-// Cmos2 port
-	,	.cmos2_clk				(cmos2_clk		)
-    ,   .cmos2_vsync  			(cmos2_vsync    )
-    ,   .cmos2_href   			(cmos2_href     )
-    ,   .cmos2_clken  			(cmos2_clken    )
-    ,   .cmos2_data   			(cmos2_data     )
-    ,   .cmos2_x_pos  			(cmos2_x_pos    )
-    ,   .cmos2_y_pos  			(cmos2_y_pos    )
+	,	.cmos_clk				(cmos_clk		)
+    ,   .cmos_vsync 			(cmos_vsync   	)
+    ,   .cmos_href  			(cmos_href    	)
+    ,   .cmos_clken 			(cmos_clken   	)
+    ,   .cmos_data  			(cmos_data    	)
+    ,   .cmos_x_pos 			(cmos_x_pos   	)
+    ,   .cmos_y_pos 			(cmos_y_pos   	)
 
 //----------------------------------------------------
 // AXI-FULL master port
