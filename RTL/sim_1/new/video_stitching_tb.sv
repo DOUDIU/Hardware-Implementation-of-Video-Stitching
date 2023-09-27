@@ -85,7 +85,17 @@ parameter integer AXI_BUSER_WIDTH	    = 0    ;
 ;   wire                                    M_AXI_RREADY   
 ;
 
+localparam _PERIOD_AXI_ = 2.5;
 
+always #(_PERIOD_AXI_/2) M_AXI_ACLK = ~M_AXI_ACLK;
+
+initial begin
+    #(_PERIOD_AXI_*10);
+    M_AXI_ARESETN = 1'b1;
+end
+
+reg         cmos_clk    [0 : 2] = '{0,0,0};
+reg         cmos_rst_n  [0 : 2] = '{0,0,0};
 wire        cmos_vsync  [0 : 2];
 wire        cmos_href   [0 : 2];
 wire        cmos_clken  [0 : 2];
@@ -97,23 +107,14 @@ parameter cmos0_period = 14;
 parameter cmos1_period = 20;
 parameter cmos2_period = 24;
 
-reg cmos0_clk = 0;
-reg cmos0_rst_n = 0;
+always#(cmos0_period/2) cmos_clk[0] = ~cmos_clk[0];
+initial #(20*cmos0_period) cmos_rst_n[0] = 1;
 
-reg cmos1_clk = 0;
-reg cmos1_rst_n = 0;
+always#(cmos1_period/2) cmos_clk[1] = ~cmos_clk[1];
+initial #(13*cmos1_period) cmos_rst_n[1] = 1;
 
-reg cmos2_clk = 0;
-reg cmos2_rst_n = 0;
-
-always#(cmos0_period/2) cmos0_clk = ~cmos0_clk;
-initial #(20*cmos0_period) cmos0_rst_n = 1;
-
-always#(cmos1_period/2) cmos1_clk = ~cmos1_clk;
-initial #(13*cmos1_period) cmos1_rst_n = 1;
-
-always#(cmos2_period/2) cmos2_clk = ~cmos2_clk;
-initial #(10*cmos2_period) cmos2_rst_n = 1;
+always#(cmos2_period/2) cmos_clk[2] = ~cmos_clk[2];
+initial #(10*cmos2_period) cmos_rst_n[2] = 1;
 
 sim_cmos #(
 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
@@ -163,7 +164,7 @@ sim_cmos #(
 	,   .Y_POS          (cmos_y_pos[2]	)
 );
 
-video_to_axi_top #(
+video_stiching_top #(
         // Base address of targeted slave
 	    .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
@@ -184,11 +185,10 @@ video_to_axi_top #(
 	,   .C_M_AXI_RUSER_WIDTH	( 0 )
 	    // Width of User Response Bus
 	,   .C_M_AXI_BUSER_WIDTH	( 0 )
-)u_video_to_axi_top(
+)u_video_stiching_top(
 //----------------------------------------------------
 // system port
-        .clk					()
-    ,   .rst_n					()
+        .rst_n					(M_AXI_ARESETN  )
 
 //----------------------------------------------------
 // Cmos0 port

@@ -201,14 +201,8 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // cmos burst handshake 
-	,	input   wire           	cmos0_burst_valid      
-	,	output	reg				cmos0_burst_ready     
-
-	,	input   wire           	cmos1_burst_valid      
-	,	output	reg				cmos1_burst_ready   
-	
-	,	input   wire           	cmos2_burst_valid      
-	,	output	reg				cmos2_burst_ready   
+	,	input   wire           	cmos_burst_valid	[0 : 2]      
+	,	output	reg				cmos_burst_ready	[0 : 2]
 
 //----------------------------------------------------
 // cmos interface 
@@ -279,9 +273,10 @@ module axi_full_core#(
 
 	wire			frd_rdy;
 
-	generate for(i = 0; i < 3 ;i = i + 1) begin
-		assign	cmos_frd_rdy[i] = frd_rdy & write_current_frame[i];
-	end
+	generate 
+		for(i = 0; i < 3; i = i + 1) begin
+			assign	cmos_frd_rdy[i] = frd_rdy & write_current_frame[i];
+		end
 	endgenerate
 
 
@@ -872,14 +867,14 @@ module axi_full_core#(
 				// This state is responsible to wait for user defined C_M_START_COUNT                           
 				// number of clock cycles.                                                                      
 				//if ( init_txn_pulse == 1'b1) begin         
-				if(cmos0_burst_valid | cmos1_burst_valid | cmos2_burst_valid) begin
-					case({cmos0_burst_valid,cmos1_burst_valid,cmos2_burst_valid})
+				if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2]) begin
+					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
 						3'b100,3'b101,3'b110,3'b111 : begin
 							mst_exec_state  <= INIT_WRITE;
 							axi_awaddr	<=	axi_awaddr_cmos0 + cmos_wr_buffer[0] * cmos_wr_buffer0_max;
 							axi_awaddr_cmos0 <=	axi_awaddr_cmos0 >= axi_awaddr_cmos0_max ? 0 : axi_awaddr_cmos0 + Cmos0_H * 4;
 							write_burst_counter_max	<=	(Cmos0_H * Cmos0_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-							cmos0_burst_ready <= 1'b1;
+							cmos_burst_ready[0] <= 1'b1;
 							write_current_frame <= 3'b001;
 						end
 						3'b010,3'b011 : begin
@@ -887,7 +882,7 @@ module axi_full_core#(
 							axi_awaddr	<=	axi_awaddr_cmos1 + cmos_wr_buffer[1] * cmos_wr_buffer0_max;
 							axi_awaddr_cmos1 <=	axi_awaddr_cmos1 >= axi_awaddr_cmos1_max ? 0 : axi_awaddr_cmos1 + Cmos1_H * 4;
 							write_burst_counter_max	<=	(Cmos1_H * Cmos1_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-							cmos1_burst_ready <= 1'b1;
+							cmos_burst_ready[1] <= 1'b1;
 							write_current_frame <= 3'b010;
 						end
 						3'b001: begin
@@ -895,7 +890,7 @@ module axi_full_core#(
 							axi_awaddr	<=	axi_awaddr_cmos2 + cmos_wr_buffer[2] * cmos_wr_buffer0_max;
 							axi_awaddr_cmos2 <=	axi_awaddr_cmos2 >= axi_awaddr_cmos2_max? 0 : axi_awaddr_cmos2 + Cmos2_H * 4;
 							write_burst_counter_max	<=	(Cmos2_H * Cmos2_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-							cmos2_burst_ready <= 1'b1;
+							cmos_burst_ready[2] <= 1'b1;
 							write_current_frame <= 3'b100;
 						end
 						default: begin
