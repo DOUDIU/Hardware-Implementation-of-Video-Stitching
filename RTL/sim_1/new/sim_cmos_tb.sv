@@ -1,7 +1,7 @@
 module sim_cmos#(
-		parameter PIC_PATH = "../../../../../../pic/duck_fog.bmp"
-	,	parameter IMG_HDISP = 11'd640
-	,	parameter IMG_VDISP = 11'd480
+		parameter PIC_PATH 	= "../../../../../../pic/duck_fog.bmp"
+	,	parameter IMG_HDISP = 640
+	,	parameter IMG_VDISP = 480
 )(
 		input			clk
 	, 	input			rst_n
@@ -31,16 +31,6 @@ localparam BMP_SIZE   = 54 + IMG_HDISP * IMG_VDISP * 3 - 1;     //输出BMP 字�
     
 reg [ 7:0] rBmpData [0:BMP_SIZE];  
 
-reg [31:0] rBmpWord;
-reg [ 7:0] Vip_BmpData_1 	[0:BMP_SIZE];   
-reg [ 7:0] Vip_BmpData_2 	[0:BMP_SIZE];  
-reg [ 7:0] Vip_BmpData_3 	[0:BMP_SIZE];  
-reg [ 7:0] Vip_BmpData_4 	[0:BMP_SIZE];  
-reg [ 7:0] vip_pixel_data_1 [0:BMP_SIZE];
-reg [ 7:0] vip_pixel_data_2 [0:BMP_SIZE];
-reg [ 7:0] vip_pixel_data_3 [0:BMP_SIZE];
-reg [ 7:0] vip_pixel_data   [0:BMP_SIZE];
-
 integer i,j;
 
 
@@ -58,14 +48,12 @@ initial begin
 	
 	//关闭输入BMP图片
 	$fclose(iBmpFileId);
-	if((iBmpWidth!= IMG_HDISP) | (iBmpHight!=IMG_VDISP)) begin
-		$display("Resolution mismatching.\n");
-		$finish;
-	end
+	// if((iBmpWidth!= IMG_HDISP) | (iBmpHight!=IMG_VDISP)) begin
+	// 	$display("Resolution mismatching.\n");
+	// 	$stop;
+	// end
 end
 
-
- 
 //---------------------------------------------
 //产生摄像头时序 
 

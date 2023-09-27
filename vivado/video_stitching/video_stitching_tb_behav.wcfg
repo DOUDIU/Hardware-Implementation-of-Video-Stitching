@@ -11,23 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="13,347.666667 us"></ZoomStartTime>
-      <ZoomEndTime time="23,267.666668 us"></ZoomEndTime>
-      <Cursor1Time time="15,001.000000 us"></Cursor1Time>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="10,010.000001 us"></ZoomEndTime>
+      <Cursor1Time time="0.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="300"></NameColumnWidth>
-      <ValueColumnWidth column_width="244"></ValueColumnWidth>
+      <ValueColumnWidth column_width="226"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="9" />
-   <wvobject fp_name="/video_stitching_tb/cmos0_clk" type="logic">
-      <obj_property name="ElementShortName">cmos0_clk</obj_property>
-      <obj_property name="ObjectShortName">cmos0_clk</obj_property>
-   </wvobject>
-   <wvobject fp_name="/video_stitching_tb/cmos0_rst_n" type="logic">
-      <obj_property name="ElementShortName">cmos0_rst_n</obj_property>
-      <obj_property name="ObjectShortName">cmos0_rst_n</obj_property>
-   </wvobject>
+   <WVObjectSize size="20" />
    <wvobject fp_name="/video_stitching_tb/cmos0_vsync" type="logic">
       <obj_property name="ElementShortName">cmos0_vsync</obj_property>
       <obj_property name="ObjectShortName">cmos0_vsync</obj_property>
@@ -47,15 +39,67 @@
    <wvobject fp_name="/video_stitching_tb/cmos0_x_pos" type="array">
       <obj_property name="ElementShortName">cmos0_x_pos[10:0]</obj_property>
       <obj_property name="ObjectShortName">cmos0_x_pos[10:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/video_stitching_tb/cmos0_y_pos" type="array">
       <obj_property name="ElementShortName">cmos0_y_pos[10:0]</obj_property>
       <obj_property name="ObjectShortName">cmos0_y_pos[10:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_vsync" type="logic">
+      <obj_property name="ElementShortName">cmos1_vsync</obj_property>
+      <obj_property name="ObjectShortName">cmos1_vsync</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_href" type="logic">
+      <obj_property name="ElementShortName">cmos1_href</obj_property>
+      <obj_property name="ObjectShortName">cmos1_href</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_clken" type="logic">
+      <obj_property name="ElementShortName">cmos1_clken</obj_property>
+      <obj_property name="ObjectShortName">cmos1_clken</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_data" type="array">
+      <obj_property name="ElementShortName">cmos1_data[23:0]</obj_property>
+      <obj_property name="ObjectShortName">cmos1_data[23:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_x_pos" type="array">
+      <obj_property name="ElementShortName">cmos1_x_pos[10:0]</obj_property>
+      <obj_property name="ObjectShortName">cmos1_x_pos[10:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_y_pos" type="array">
+      <obj_property name="ElementShortName">cmos1_y_pos[10:0]</obj_property>
+      <obj_property name="ObjectShortName">cmos1_y_pos[10:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos0_clk" type="logic">
+      <obj_property name="ElementShortName">cmos0_clk</obj_property>
+      <obj_property name="ObjectShortName">cmos0_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos0_rst_n" type="logic">
+      <obj_property name="ElementShortName">cmos0_rst_n</obj_property>
+      <obj_property name="ObjectShortName">cmos0_rst_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_clk" type="logic">
+      <obj_property name="ElementShortName">cmos1_clk</obj_property>
+      <obj_property name="ObjectShortName">cmos1_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_rst_n" type="logic">
+      <obj_property name="ElementShortName">cmos1_rst_n</obj_property>
+      <obj_property name="ObjectShortName">cmos1_rst_n</obj_property>
    </wvobject>
    <wvobject fp_name="/video_stitching_tb/cmos0_period" type="array">
       <obj_property name="ElementShortName">cmos0_period[31:0]</obj_property>
       <obj_property name="ObjectShortName">cmos0_period[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/cmos1_period" type="array">
+      <obj_property name="ElementShortName">cmos1_period[31:0]</obj_property>
+      <obj_property name="ObjectShortName">cmos1_period[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/u_sim_cmos0/iBmpWidth" type="array">
+      <obj_property name="ElementShortName">iBmpWidth[31:0]</obj_property>
+      <obj_property name="ObjectShortName">iBmpWidth[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/video_stitching_tb/u_sim_cmos0/iBmpHight" type="array">
+      <obj_property name="ElementShortName">iBmpHight[31:0]</obj_property>
+      <obj_property name="ObjectShortName">iBmpHight[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
 </wave_config>
