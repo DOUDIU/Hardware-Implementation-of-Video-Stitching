@@ -49,15 +49,17 @@ module axi_full_core#(
 		// Width of User Response Bus
 	,   parameter integer C_M_AXI_BUSER_WIDTH	= 0
 )(
-
 //----------------------------------------------------
-// AXI-FULL master port
+// auxiliary signals
     // Initiate AXI transactions
         input wire  INIT_AXI_TXN
     // Asserts when transaction is complete
-    ,   output wire  TXN_DONE
+    ,   output wire TXN_DONE
     // Asserts when ERROR is detected
     ,   output reg  ERROR
+
+//----------------------------------------------------
+// AXI-FULL master port
     // Global Clock Signal.
     ,   input wire  M_AXI_ACLK
     // Global Reset Singal. This Signal is Active Low
@@ -196,10 +198,58 @@ module axi_full_core#(
     ,   output  reg  [FDW-1:0] 	bwr_dat  
     ,   input   wire           	bwr_full
     ,   input   wire [FAW:0] 	brd_cnt  
+
+//----------------------------------------------------
+// cmos burst handshake 
+	,	input   wire           	cmos0_burst_valid      
+	,	output	reg				cmos0_burst_ready     
+
+	,	input   wire           	cmos1_burst_valid      
+	,	output	reg				cmos1_burst_ready   
+	
+	,	input   wire           	cmos2_burst_valid      
+	,	output	reg				cmos2_burst_ready   
+
+//----------------------------------------------------
+// cmos interface 
+	,	input	wire			cmos_vsync [0 : 2]
 );
+	integer i;
+
+	parameter Cmos0_H = 1920;
+	parameter Cmos0_V = 1080;
+	parameter Cmos1_H = 960;
+	parameter Cmos1_V = 540;
+	parameter Cmos2_H = 960;
+	parameter Cmos2_V = 540;
+
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos0;
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos1;
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos2;
+	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos0_max;
+	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos1_max;
+	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos2_max;
+	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - burst_size_bytes;
+	assign axi_awaddr_cmos1_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 - burst_size_bytes;
+	assign axi_awaddr_cmos2_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 - burst_size_bytes;
 
 
+	reg		cmos_vsync_d1[0:2];
+	reg		cmos_vsync_d2[0:2];
 
+generate for(i = 0; i < 3 ;i = i + 1) begin
+	always @(posedge M_AXI_ACLK) begin
+		if (M_AXI_ARESETN == 0) begin
+			cmos_vsync_d1[i]	<=	0;
+			cmos_vsync_d2[i]	<=	0;                             
+		end                                                                               
+		else begin  
+			cmos_vsync_d1[i]	<=	0;
+			cmos_vsync_d2[i]	<=	0;                                                                 
+		end                                                                      
+	end   
+end
+endgenerate
 
 	// function called clogb2 that returns an integer which has the
 	//value of the ceiling of the log base 2
@@ -327,8 +377,6 @@ module axi_full_core#(
 	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH / 8;
 	assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
-	wire [31:0]	axi_awaddr_max;
-	assign axi_awaddr_max = PIXELS_VERTICAL * PIXELS_HORIZONTAL * FRAME_DELAY * 4 - burst_size_bytes;
 
 	//Generate a pulse to initiate AXI transaction.
 	always @(posedge M_AXI_ACLK)										      
@@ -385,7 +433,7 @@ module axi_full_core#(
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
-			axi_awaddr <= axi_awaddr >= axi_awaddr_max ? 0 : (axi_awaddr + burst_size_bytes);                   
+			axi_awaddr <= axi_awaddr + burst_size_bytes;                   
 		end                                                              
 		else begin                                                           
 			axi_awaddr <= axi_awaddr;
@@ -770,12 +818,13 @@ module axi_full_core#(
 			// All the signals are assigned default values under reset condition                                
 			mst_exec_state      <= IDLE;                                                                
 			start_single_burst_write <= 1'b0;                                                                   
-			start_single_burst_read  <= 1'b0;                                                                   
-			compare_done      <= 1'b0;                                                                          
-			ERROR <= 1'b0;   
+			start_single_burst_read  <= 1'b0;
+			axi_awaddr_cmos0	<=	0;
+			axi_awaddr_cmos1	<=	Cmos0_H * Cmos0_V * 4;
+			axi_awaddr_cmos2	<=	Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
 		end
 		else begin                                                                                                 
-																												
+
 			// state transition                                                                                 
 			case (mst_exec_state)                                                                               
 																												
@@ -783,12 +832,32 @@ module axi_full_core#(
 				// This state is responsible to wait for user defined C_M_START_COUNT                           
 				// number of clock cycles.                                                                      
 				//if ( init_txn_pulse == 1'b1) begin         
-				if(INIT_AXI_TXN) begin                                                            
-					mst_exec_state  <= INIT_WRITE;                                                              
-					ERROR <= 1'b0;
-					compare_done <= 1'b0;
+				if(cmos0_burst_valid | cmos1_burst_valid | cmos2_burst_valid) begin
+					case({cmos0_burst_valid,cmos1_burst_valid,cmos2_burst_valid})
+						3'b100,3'b101,3'b110,3'b111 : begin
+							mst_exec_state  <= INIT_WRITE;
+							axi_awaddr	<=	axi_awaddr_cmos0;
+							axi_awaddr_cmos0 <=	axi_awaddr_cmos0 >= axi_awaddr_cmos0_max ? 0 : axi_awaddr_cmos0 + Cmos0_H * 4;
+							cmos0_burst_ready <= 1'b1;
+						end
+						3'b010,3'b011 : begin
+							mst_exec_state  <= INIT_WRITE;
+							axi_awaddr	<=	axi_awaddr_cmos1;
+							axi_awaddr_cmos1 <=	axi_awaddr_cmos1 >= axi_awaddr_cmos1_max ? 0 : axi_awaddr_cmos1 + Cmos1_H * 4;
+							cmos1_burst_ready <= 1'b1;
+						end
+						3'b001: begin
+							mst_exec_state  <= INIT_WRITE;
+							axi_awaddr	<=	axi_awaddr_cmos2;
+							axi_awaddr_cmos2 <=	axi_awaddr_cmos2 >= axi_awaddr_cmos2_max? 0 : axi_awaddr_cmos2 + Cmos2_H * 4;
+							cmos2_burst_ready <= 1'b1;
+						end
+						default: begin
+							mst_exec_state  <= IDLE;
+						end
+					endcase
 				end                                                                                           
-				else begin                                                                                         
+				else begin
 					mst_exec_state  <= IDLE;                                                            
 				end
 
