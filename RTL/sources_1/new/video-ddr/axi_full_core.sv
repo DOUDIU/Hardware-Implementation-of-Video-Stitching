@@ -231,15 +231,15 @@ module axi_full_core#(
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos0_max;
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos1_max;
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos2_max;
-	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - burst_size_bytes;
-	assign axi_awaddr_cmos1_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 - burst_size_bytes;
-	assign axi_awaddr_cmos2_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 - burst_size_bytes;
+	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - Cmos0_H * 4;
+	assign axi_awaddr_cmos1_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 - Cmos1_H * 4;
+	assign axi_awaddr_cmos2_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 - Cmos2_H * 4;
 
 	reg				cmos_vsync_d1[0:2];
 	reg				cmos_vsync_d2[0:2];
 	
 	reg				cmos_wr_buffer[0:2];
-	wire    		cmos_wr_buffer0_max;
+	wire    [31:0]	cmos_wr_buffer0_max;
 	reg	 	[2:0]	write_current_frame = 0;
 	
 	assign cmos_wr_buffer0_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4;
@@ -857,6 +857,10 @@ module axi_full_core#(
 			axi_awaddr_cmos1	<=	Cmos0_H * Cmos0_V * 4;
 			axi_awaddr_cmos2	<=	Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
 			write_current_frame	<=	0;
+			for(integer j = 0; j < 3; j = j + 1)begin
+				cmos_burst_ready[j]	<=	0;
+			end
+			write_burst_counter_max	<=	0;
 		end
 		else begin                                                                                                 
 
@@ -871,25 +875,25 @@ module axi_full_core#(
 					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
 						3'b100,3'b101,3'b110,3'b111 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos0 + cmos_wr_buffer[0] * cmos_wr_buffer0_max;
+							axi_awaddr	<=	axi_awaddr_cmos0 + (cmos_wr_buffer[0] ? cmos_wr_buffer0_max : 0);
 							axi_awaddr_cmos0 <=	axi_awaddr_cmos0 >= axi_awaddr_cmos0_max ? 0 : axi_awaddr_cmos0 + Cmos0_H * 4;
-							write_burst_counter_max	<=	(Cmos0_H * Cmos0_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+							write_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[0] <= 1'b1;
 							write_current_frame <= 3'b001;
 						end
 						3'b010,3'b011 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos1 + cmos_wr_buffer[1] * cmos_wr_buffer0_max;
-							axi_awaddr_cmos1 <=	axi_awaddr_cmos1 >= axi_awaddr_cmos1_max ? 0 : axi_awaddr_cmos1 + Cmos1_H * 4;
-							write_burst_counter_max	<=	(Cmos1_H * Cmos1_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+							axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? cmos_wr_buffer0_max : 0);
+							axi_awaddr_cmos1 <=	axi_awaddr_cmos1 >= axi_awaddr_cmos1_max ? (Cmos0_H * Cmos0_V * 4) : (axi_awaddr_cmos1 + Cmos1_H * 4);
+							write_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[1] <= 1'b1;
 							write_current_frame <= 3'b010;
 						end
 						3'b001: begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos2 + cmos_wr_buffer[2] * cmos_wr_buffer0_max;
-							axi_awaddr_cmos2 <=	axi_awaddr_cmos2 >= axi_awaddr_cmos2_max? 0 : axi_awaddr_cmos2 + Cmos2_H * 4;
-							write_burst_counter_max	<=	(Cmos2_H * Cmos2_V * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+							axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? cmos_wr_buffer0_max : 0);
+							axi_awaddr_cmos2 <=	axi_awaddr_cmos2 >= axi_awaddr_cmos2_max? (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4) : (axi_awaddr_cmos2 + Cmos2_H * 4);
+							write_burst_counter_max	<=	(Cmos2_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[2] <= 1'b1;
 							write_current_frame <= 3'b100;
 						end
@@ -912,7 +916,11 @@ module axi_full_core#(
 				end                                                                                           
 				else begin                                                                                         
 					mst_exec_state  <= INIT_WRITE;                                                              
-																												
+	
+					for(integer j = 0; j < 3; j = j + 1)begin
+						cmos_burst_ready[j]	<=	0;
+					end
+					
 					if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin                                                                                     
 						start_single_burst_write <= 1'b1;                                                       
 					end                                                                                       
