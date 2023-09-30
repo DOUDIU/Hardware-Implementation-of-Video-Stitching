@@ -1,4 +1,5 @@
-modelsim
+modelsim/*
+!modelsim/wave.do
 
 vivado/video_stitching/*
 !vivado/video_stitching/video_stitching.xpr
