@@ -389,7 +389,10 @@ async_fifo#(
 
 fifo_to_video_ctrl u_fifo_to_video_ctrl(
         .video_clk              (video_clk                  )                          
-    ,   .video_rst_n            (1)                                 
+    ,   .video_rst_n            (1)                              
+
+    ,   .M_AXI_ACLK             (M_AXI_ACLK                 )
+    ,   .M_AXI_ARESETN          (M_AXI_ARESETN              )   
 
 	,   .video_vs_out           (video_vsync                )                                  
 	,   .video_hs_out           (video_href                 )                                  

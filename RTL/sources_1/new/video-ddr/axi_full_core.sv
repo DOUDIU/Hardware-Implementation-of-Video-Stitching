@@ -193,11 +193,11 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // backward FIFO write interface
-    ,   inout   wire           	video_bwr_rdy
-    ,   output  wire           	video_bwr_vld
-    ,   output  wire [FDW-1:0] 	video_bwr_din
-    ,   output  wire           	video_bwr_empty
-    ,   output  wire [FAW:0] 	video_bwr_cnt
+    ,   input   wire           	video_bwr_rdy
+    ,   output  reg            	video_bwr_vld
+    ,   output  reg  [FDW-1:0] 	video_bwr_din
+    ,   input   wire           	video_bwr_empty
+    ,   input   wire [FAW:0] 	video_bwr_cnt
 
 //----------------------------------------------------
 // cmos burst handshake 
@@ -874,6 +874,7 @@ module axi_full_core#(
 			end
 			write_burst_counter_max	<=	0;
 
+			video_burst_ready <= 0;
 			axi_araddr_video0	<=	0;
 			axi_araddr_video1	<=	Cmos0_H * Cmos0_V * 4;
 			read_burst_counter_max	<=	0;
@@ -954,8 +955,8 @@ module axi_full_core#(
 					if (reads_done) begin
 						mst_exec_state <= INIT_READ_REGION_B;
 						read_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-						axi_araddr	<=	axi_araddr_video1 + (cmos_wr_buffer[0] ? 0 : cmos_wr_buffer0_max);
-						axi_araddr_video0 <= axi_araddr_video1 >= axi_awaddr_cmos1_max ? 0 : axi_araddr_video1 + Cmos0_H * 4;
+						axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  axi_awaddr_cmos1_max ? (cmos_wr_buffer[2] ? 0 : cmos_wr_buffer0_max) : (cmos_wr_buffer[1] ? 0 : cmos_wr_buffer0_max));
+						axi_araddr_video1 <= axi_araddr_video1 >= axi_awaddr_cmos2_max ? (Cmos0_H * Cmos0_V * 4) : (axi_araddr_video1 + Cmos1_H * 4);
 					end                                                                                           
 					else begin                                                                                         
 						mst_exec_state  <= INIT_READ_REGION_A;
@@ -1047,7 +1048,7 @@ module axi_full_core#(
 																												
 		//The reads_done should be associated with a rready response                                            
 		//else if (M_AXI_BVALID && axi_bready && (write_burst_counter == {(C_NO_BURSTS_REQ-1){1}}) && axi_wlast)
-		else if (M_AXI_RVALID && axi_rready && (read_index == C_M_AXI_BURST_LEN-1) && (read_burst_counter == (PIXELS_HORIZONTAL*8)/(FDW*C_M_AXI_BURST_LEN)))
+		else if (M_AXI_RVALID && axi_rready && (read_index == C_M_AXI_BURST_LEN-1) && (read_burst_counter == read_burst_counter_max))
 			reads_done <= 1'b1;                                                                                   
 		else                                                                                                    
 			reads_done <= 0;                                                                             

@@ -3,6 +3,9 @@ module fifo_to_video_ctrl(
         input               video_clk
     ,   input               video_rst_n
 
+    ,   input               M_AXI_ACLK       
+    ,   input               M_AXI_ARESETN    
+
 	,   output              video_vs_out    
 	,   output              video_hs_out    
 	,   output              video_de_out    
@@ -11,20 +14,22 @@ module fifo_to_video_ctrl(
     ,   input   [127:0]     fifo_data_in
     ,   output  reg         fifo_enable
 
-    ,   output  reg         AXI_FULL_BURST_VALID
+    ,   output              AXI_FULL_BURST_VALID
     ,   input               AXI_FULL_BURST_READY
 );
+reg axi_full_burst_valid = 0;
+assign AXI_FULL_BURST_VALID = axi_full_burst_valid;
 
 reg     [1:0]   shift_cnt;
 wire            data_req;
-wire    [23:0]  pixel_data;
+reg     [23:0]  pixel_data;
 
 reg             video_vs_out_d1 = 0;
-reg             video_hs_out_d1 = 0;
+reg             video_de_out_d1 = 0;
 reg             display_trigger = 0;
 
-always@(posedge video_clk or negedge video_rst_n)begin
-    if(!video_rst_n)begin
+always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
+    if(!M_AXI_ARESETN)begin
         video_vs_out_d1 <= 1'b0;
     end
     else begin
@@ -32,33 +37,33 @@ always@(posedge video_clk or negedge video_rst_n)begin
     end 
 end
 
-always@(posedge video_clk or negedge video_rst_n)begin
-    if(!video_rst_n)begin
-        video_hs_out_d1 <= 1'b0;
+always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
+    if(!M_AXI_ARESETN)begin
+        video_de_out_d1 <= 1'b0;
     end
     else begin
-        video_hs_out_d1 <= video_hs_out;
+        video_de_out_d1 <= video_de_out;
     end 
 end
 
-always@(posedge video_clk or negedge video_rst_n)begin
-    if(!video_rst_n)begin
+always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
+    if(!M_AXI_ARESETN)begin
         display_trigger <= 1'b0;
     end
-    else if(AXI_FULL_BURST_VALID & AXI_FULL_BURST_READY)begin
+    else if(axi_full_burst_valid & AXI_FULL_BURST_READY)begin
         display_trigger <= 1'b1;
     end 
 end
 
-always@(posedge video_clk or negedge video_rst_n)begin
-    if(!video_rst_n)begin
-        AXI_FULL_BURST_VALID <= 1'b0;
+always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
+    if(!M_AXI_ARESETN)begin
+        axi_full_burst_valid <= 1'b0;
     end
-    else if((!display_trigger & video_vs_out_d1 & !video_vs_out) | (video_hs_out_d1 & !video_hs_out)) begin
-        AXI_FULL_BURST_VALID <= 1'b1;
+    else if(((!display_trigger) & video_vs_out_d1 & (!video_vs_out)) | (display_trigger & video_de_out_d1 & (!video_de_out))) begin
+        axi_full_burst_valid <= 1'b1;
     end
-    else if(AXI_FULL_BURST_VALID & AXI_FULL_BURST_READY)begin
-        AXI_FULL_BURST_VALID <= 1'b0;
+    else if(axi_full_burst_valid & AXI_FULL_BURST_READY)begin
+        axi_full_burst_valid <= 1'b0;
     end 
 end
 
