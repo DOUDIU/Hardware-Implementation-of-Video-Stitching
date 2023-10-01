@@ -102,6 +102,10 @@ wire        cmos_clken  [0 : 2];
 wire [23:0] cmos_data   [0 : 2];
 wire [10:0] cmos_x_pos  [0 : 2];
 wire [10:0] cmos_y_pos  [0 : 2];
+wire        video_vsync ;
+wire        video_hsync ;
+wire        video_de    ;
+wire [23:0] video_data  ;
 
 parameter cmos0_period = 14;
 parameter cmos1_period = 20;
@@ -168,6 +172,36 @@ sim_cmos #(
 	,   .Y_POS          (cmos_y_pos[2]	)
 );
 
+// video_topic #(
+//         .PIC_PATH       ("..\\pic\\outcom2.bmp")
+//     ,   .START_FRAME    (2                    )
+// 	,	.IMG_HDISP      (960)//(2880                 )
+// 	,	.IMG_VDISP      (540)//(1080                 )
+//     ,   .DATA_WIDTH     (24                   )
+// )u_video_topic_test(
+//         .clk            (cmos_clk[1]	)//(video_clk      )
+//     ,   .rst_n          (1)
+//     ,   .video_vsync    (cmos_vsync[1]	)//(video_vsync    )
+//     ,   .video_hsync    (cmos_href[1]	)//(video_hsync    )
+//     ,   .video_de       (cmos_clken[1]	)//(video_de       )
+//     ,   .video_data     (cmos_data[1]	)//(video_data     )
+// );
+
+video_topic #(
+        .PIC_PATH       ("..\\pic\\outcom.bmp")
+    ,   .START_FRAME    (2                    )
+	,	.IMG_HDISP      (2880                 )
+	,	.IMG_VDISP      (1080                 )
+    ,   .DATA_WIDTH     (24                   )
+)u_video_topic(
+        .clk            (video_clk      )
+    ,   .rst_n          (1)
+    ,   .video_vsync    (video_vsync    )
+    ,   .video_hsync    (video_hsync    )
+    ,   .video_de       (video_de       )
+    ,   .video_data     (video_data     )
+);
+
 video_stiching_top #(
         // Base address of targeted slave
 	    .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
@@ -207,10 +241,10 @@ video_stiching_top #(
 //----------------------------------------------------
 // Video port
     ,   .video_clk              (video_clk      )
-    ,   .video_vsync            ()
-    ,   .video_href             ()
-    ,   .video_de               ()
-    ,   .video_data             ()
+    ,   .video_vsync            (video_vsync    )
+    ,   .video_href             (video_hsync    )
+    ,   .video_de               (video_de       )
+    ,   .video_data             (video_data     )
 
 //----------------------------------------------------
 // AXI-FULL master port
