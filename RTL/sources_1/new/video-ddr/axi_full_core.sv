@@ -193,6 +193,14 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // backward FIFO write interface
+    ,   output  wire           	video_bwr_rdy
+    ,   input   wire           	video_bwr_vld
+    ,   input   wire [FDW-1:0] 	video_bwr_din
+    ,   input   wire           	video_bwr_empty
+    ,   input   wire [FAW:0] 	video_bwr_cnt
+
+//----------------------------------------------------
+// backward FIFO write interface
     ,   input   wire           	bwr_rdy  
     ,   output  reg           	bwr_vld  
     ,   output  reg  [FDW-1:0] 	bwr_dat  
@@ -203,6 +211,11 @@ module axi_full_core#(
 // cmos burst handshake 
 	,	input   wire           	cmos_burst_valid	[0 : 2]      
 	,	output	reg				cmos_burst_ready	[0 : 2]
+
+//----------------------------------------------------
+// video burst handshake 
+	,	input   wire           	video_burst_valid
+	,	output	reg				video_burst_ready
 
 //----------------------------------------------------
 // cmos interface 

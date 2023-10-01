@@ -116,6 +116,10 @@ initial #(13*cmos1_period) cmos_rst_n[1] = 1;
 always#(cmos2_period/2) cmos_clk[2] = ~cmos_clk[2];
 initial #(10*cmos2_period) cmos_rst_n[2] = 1;
 
+reg         video_clk   = 0;
+
+always#(3.37) video_clk = ~video_clk;
+
 sim_cmos #(
 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
 		.PIC_PATH	("..\\pic\\afternoon.bmp")
@@ -191,7 +195,7 @@ video_stiching_top #(
         .rst_n					(M_AXI_ARESETN  )
 
 //----------------------------------------------------
-// Cmos0 port
+// Cmos port
 	,	.cmos_clk				(cmos_clk		)
     ,   .cmos_vsync 			(cmos_vsync   	)
     ,   .cmos_href  			(cmos_href    	)
@@ -199,6 +203,14 @@ video_stiching_top #(
     ,   .cmos_data  			(cmos_data    	)
     ,   .cmos_x_pos 			(cmos_x_pos   	)
     ,   .cmos_y_pos 			(cmos_y_pos   	)
+
+//----------------------------------------------------
+// Video port
+    ,   .video_clk              (video_clk      )
+    ,   .video_vsync            ()
+    ,   .video_href             ()
+    ,   .video_de               ()
+    ,   .video_data             ()
 
 //----------------------------------------------------
 // AXI-FULL master port

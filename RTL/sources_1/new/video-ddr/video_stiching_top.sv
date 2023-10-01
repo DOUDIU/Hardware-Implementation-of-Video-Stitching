@@ -55,6 +55,14 @@ module video_stiching_top#(
     ,   input   [10:0]  cmos_y_pos      [0 : 2]     
 
 //----------------------------------------------------
+// Video port
+    ,   input           video_clk
+    ,   output          video_vsync
+    ,   output          video_href
+    ,   output          video_de
+    ,   output  [23:0]  video_data
+    
+//----------------------------------------------------
 // AXI-FULL master port
     // Global Clock Signal.
     ,   input wire  M_AXI_ACLK
@@ -187,9 +195,17 @@ wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_wr_data_out   [0 : 2];
 wire                                cmos_fifo_rd_enable     [0 : 2];
 wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_rd_data_out   [0 : 2];
 
+wire                                video_burst_valid        ;
+wire                                video_burst_ready        ;
+wire                                video_fifo_wr_enable     ;
+wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_wr_data_out   ;
+wire                                video_fifo_rd_enable     ;
+wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out   ;
+
+
 generate 
     for(genvar i = 0; i < 3; i = i + 1) begin
-        video_to_fifo_ctrl u_cmos0_to_fifo_ctrl(
+        video_to_fifo_ctrl u_cmos_to_fifo_ctrl(
                 .video_rst_n            (rst_n                      )
             ,   .video_clk              (cmos_clk[i]                )
             ,   .video_vs_out           (cmos_vsync[i]              )
@@ -215,7 +231,7 @@ generate
                 .DSIZE                  (AXI4_DATA_WIDTH            )  
             ,   .ASIZE                  (FIFO_AW                    )  
             ,   .FALLTHROUGH            ("TRUE"                     )  
-        )u_async_cmos0_forward_fifo(    
+        )u_async_forward_fifo(    
                 .wclk                   (cmos_clk[i]                )
             ,   .wrst_n                 (rst_n                      )
             ,   .winc                   (cmos_fifo_wr_enable[i]     )
@@ -268,10 +284,23 @@ axi_full_core #(
     ,   .cmos_frd_cnt	    ()
 
 //----------------------------------------------------
+// backward FIFO write interface
+    ,   .video_bwr_rdy      ()
+    ,   .video_bwr_vld      (video_fifo_wr_enable   )
+    ,   .video_bwr_din      (video_fifo_wr_data_out )
+    ,   .video_bwr_empty    ()
+    ,   .video_bwr_cnt	    ()
+
+//----------------------------------------------------
 // cmos burst handshake 
-	,	.cmos_burst_valid   (cmos_burst_valid       )      
+	,	.cmos_burst_valid   (cmos_burst_valid       )
 	,	.cmos_burst_ready   (cmos_burst_ready       )
 
+//----------------------------------------------------
+// video burst handshake 
+	,	.video_burst_valid  (video_burst_valid      )
+	,	.video_burst_ready  (video_burst_ready      )
+    
 //----------------------------------------------------
 // cmos interface 
 	,	.cmos_vsync         (cmos_vsync             )
@@ -336,6 +365,47 @@ axi_full_core #(
     ,   .M_AXI_RVALID       (M_AXI_RVALID       )
     ,   .M_AXI_RREADY       (M_AXI_RREADY       )
 );
+
+async_fifo#(
+        .DSIZE                  (AXI4_DATA_WIDTH            )  
+    ,   .ASIZE                  (FIFO_AW                    )  
+    ,   .FALLTHROUGH            ("TRUE"                     )  
+)u_async_backward_fifo(    
+        .wclk                   (M_AXI_ACLK                 )
+    ,   .wrst_n                 (M_AXI_ARESETN              )
+    ,   .winc                   (video_fifo_wr_enable       )
+    ,   .wdata                  (video_fifo_wr_data_out     )
+    ,   .wfull                  ()
+    ,   .awfull                 ()
+
+    ,   .rclk                   (video_clk                  )
+    ,   .rrst_n                 (1) 
+    ,   .rdata                  (video_fifo_rd_data_out     )
+    ,   .rinc                   (video_fifo_rd_enable       )
+    ,   .rempty                 ()
+    ,   .arempty                ()
+);
+
+
+fifo_to_video_ctrl u_fifo_to_video_ctrl(
+        .video_clk              (video_clk                  )                          
+    ,   .video_rst_n            (1)                                 
+
+	,   .video_vs_out           (video_vsync                )                                  
+	,   .video_hs_out           (video_href                 )                                  
+	,   .video_de_out           (video_de                   )                                  
+	,   .video_data_out         (video_data                 )                                  
+
+    ,   .fifo_data_in           (video_fifo_rd_data_out     )                              
+    ,   .fifo_enable            (video_fifo_rd_enable       )                              
+
+    ,   .AXI_FULL_BURST_VALID   (video_burst_valid          )                                      
+    ,   .AXI_FULL_BURST_READY   (video_burst_ready          )                                      
+);
+
+
+
+
 
 
 endmodule
