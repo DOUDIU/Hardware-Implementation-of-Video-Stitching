@@ -193,19 +193,11 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // backward FIFO write interface
-    ,   output  wire           	video_bwr_rdy
-    ,   input   wire           	video_bwr_vld
-    ,   input   wire [FDW-1:0] 	video_bwr_din
-    ,   input   wire           	video_bwr_empty
-    ,   input   wire [FAW:0] 	video_bwr_cnt
-
-//----------------------------------------------------
-// backward FIFO write interface
-    ,   input   wire           	bwr_rdy  
-    ,   output  reg           	bwr_vld  
-    ,   output  reg  [FDW-1:0] 	bwr_dat  
-    ,   input   wire           	bwr_full
-    ,   input   wire [FAW:0] 	brd_cnt  
+    ,   inout   wire           	video_bwr_rdy
+    ,   output  wire           	video_bwr_vld
+    ,   output  wire [FDW-1:0] 	video_bwr_din
+    ,   output  wire           	video_bwr_empty
+    ,   output  wire [FAW:0] 	video_bwr_cnt
 
 //----------------------------------------------------
 // cmos burst handshake 
@@ -236,6 +228,9 @@ module axi_full_core#(
 	parameter Cmos1_V = 540;
 	parameter Cmos2_H = 960;
 	parameter Cmos2_V = 540;
+	
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr_video0;
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr_video1;
 
 
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos0;
@@ -317,9 +312,12 @@ module axi_full_core#(
 	parameter [3:0] IDLE = 4'b0000, // This state initiates AXI4Lite transaction 
 			// after the state machine changes state to INIT_WRITE 
 			// when there is 0 to 1 transition on INIT_AXI_TXN
-		INIT_WRITE   = 4'b0001; // This state initializes write transaction,
+		INIT_WRITE   = 4'b0001, // This state initializes write transaction,
 			// once writes are done, the state machine 
 			// changes state to INIT_READ 
+		INIT_READ_REGION_A = 4'b0010,
+		INIT_READ_REGION_B = 4'b0011;
+
 
 	 reg [3:0] mst_exec_state;
 
@@ -342,6 +340,7 @@ module axi_full_core#(
 	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
 	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter_max;
 	reg [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
+	reg [C_NO_BURSTS_REQ : 0] 	read_burst_counter_max;
 	reg  	start_single_burst_write;
 	reg  	start_single_burst_read;
 	reg  	writes_done;
@@ -676,7 +675,7 @@ module axi_full_core#(
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
-	    	axi_araddr <= (axi_araddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL * FRAME_DELAY - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : axi_araddr + burst_size_bytes;
+	    	axi_araddr <= axi_araddr + burst_size_bytes;
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -708,16 +707,16 @@ module axi_full_core#(
                                 
 	always @(posedge M_AXI_ACLK) begin                                                                 
 	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
-	        bwr_vld	<=	0;
-			bwr_dat	<=	0;   	                                  
+	        video_bwr_vld	<=	0;
+			video_bwr_din	<=	0;   	                                  
 		end
 		else if(rnext)begin
-	        bwr_vld	<=	1;
-			bwr_dat	<=	M_AXI_RDATA;   
+	        video_bwr_vld	<=	1;
+			video_bwr_din	<=	M_AXI_RDATA;   
 		end
 		else begin
-	        bwr_vld	<=	0;
-			bwr_dat	<=	0;   	
+	        video_bwr_vld	<=	0;
+			video_bwr_din	<=	0;   	
 		end
 	end
 
@@ -848,7 +847,7 @@ module axi_full_core#(
 			read_burst_counter <= 'b0;                                                                          
 		end                                                                                                   
 		else if (M_AXI_ARREADY && axi_arvalid) begin                                                                                                 
-			if (read_burst_counter <= (PIXELS_HORIZONTAL*8)/(FDW*C_M_AXI_BURST_LEN)) begin
+			if (read_burst_counter <= read_burst_counter_max) begin
 				read_burst_counter <= read_burst_counter + 1'b1;
 			end                                                                                               
 		end                                                                                                   
@@ -874,6 +873,10 @@ module axi_full_core#(
 				cmos_burst_ready[j]	<=	0;
 			end
 			write_burst_counter_max	<=	0;
+
+			axi_araddr_video0	<=	0;
+			axi_araddr_video1	<=	Cmos0_H * Cmos0_V * 4;
+			read_burst_counter_max	<=	0;
 		end
 		else begin                                                                                                 
 
@@ -882,9 +885,15 @@ module axi_full_core#(
 																												
 				IDLE:                                                                                     
 				// This state is responsible to wait for user defined C_M_START_COUNT                           
-				// number of clock cycles.                                                                      
-				//if ( init_txn_pulse == 1'b1) begin         
-				if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2]) begin
+				// number of clock cycles.
+				if(video_burst_valid) begin
+					mst_exec_state  <= INIT_READ_REGION_A;
+					read_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+					video_burst_ready <= 1;
+					axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : cmos_wr_buffer0_max);
+					axi_araddr_video0 <= axi_araddr_video0 >= axi_awaddr_cmos0_max ? 0 : axi_araddr_video0 + Cmos0_H * 4;
+				end
+				else if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2]) begin
 					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
 						3'b100,3'b101,3'b110,3'b111 : begin
 							mst_exec_state  <= INIT_WRITE;
@@ -940,7 +949,37 @@ module axi_full_core#(
 					else begin                                                                                     
 						start_single_burst_write <= 1'b0; //Negate to generate a pulse                          
 					end                                                                                       
-				end                                                                                      
+				end
+				INIT_READ_REGION_A : begin
+					if (reads_done) begin
+						mst_exec_state <= INIT_READ_REGION_B;
+						read_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						axi_araddr	<=	axi_araddr_video1 + (cmos_wr_buffer[0] ? 0 : cmos_wr_buffer0_max);
+						axi_araddr_video0 <= axi_araddr_video1 >= axi_awaddr_cmos1_max ? 0 : axi_araddr_video1 + Cmos0_H * 4;
+					end                                                                                           
+					else begin                                                                                         
+						mst_exec_state  <= INIT_READ_REGION_A;
+						video_burst_ready <= 0;
+						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
+							start_single_burst_read <= 1'b1;                                                        
+						end                                                                                       
+					else
+						start_single_burst_read <= 1'b0; //Negate to generate a pulse                                                              
+					end
+				end
+				INIT_READ_REGION_B : begin
+					if (reads_done) begin
+						mst_exec_state <= IDLE;
+					end                                                                                           
+					else begin                                                                                         
+						mst_exec_state  <= INIT_READ_REGION_B;
+						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
+							start_single_burst_read <= 1'b1;                                                        
+						end                                                                                       
+					else
+						start_single_burst_read <= 1'b0; //Negate to generate a pulse                                       
+					end
+				end
 				default : begin                                                                                           
 					mst_exec_state  <= IDLE;                                                              
 				end                                                                                             
