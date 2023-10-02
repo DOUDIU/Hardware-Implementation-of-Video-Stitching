@@ -189,7 +189,7 @@ sim_cmos #(
 
 video_topic #(
         .PIC_PATH       ("..\\pic\\outcom.bmp")
-    ,   .START_FRAME    (2                    )
+    ,   .START_FRAME    (5                    )
 	,	.IMG_HDISP      (2880                 )
 	,	.IMG_VDISP      (1080                 )
     ,   .DATA_WIDTH     (24                   )

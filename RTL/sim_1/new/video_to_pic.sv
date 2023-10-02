@@ -54,7 +54,7 @@ always@(posedge clk or negedge rst_n)begin
         frame_cnt   <=  0;
     end
     else if(video_vsync_d1 & !video_vsync)begin
-        frame_cnt   <=  frame_cnt < 8 ? frame_cnt + 1 : frame_cnt;
+        frame_cnt   <=  frame_cnt < 7 ? frame_cnt + 1 : frame_cnt;
     end
 end
 

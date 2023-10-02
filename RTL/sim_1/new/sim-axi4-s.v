@@ -567,9 +567,7 @@
 	      begin:BYTE_BRAM_GEN
 	        wire [8-1:0] data_in ;
 	        wire [8-1:0] data_out;
-	        reg  [8-1:0] byte_ram [0 : 655359];
-	        //each frame is 10Mb = 1280 * 1024 * 8 bits
-			//128bits * 655360 = 80Mb = 10Mb * 8 frames
+	        reg  [8-1:0] byte_ram [0 : 1655359];
 
 			integer  j;
 	     

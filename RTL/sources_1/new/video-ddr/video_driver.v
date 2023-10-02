@@ -3,7 +3,7 @@ module video_driver#(
     parameter  H_BACK   =  12'd148  ,
     parameter  H_DISP   =  12'd1920 + 12'd960,
     parameter  H_FRONT  =  12'd88   ,
-    parameter  H_TOTAL  =  12'd2200 ,
+    parameter  H_TOTAL  =  12'd2200 + 12'd960,
 
     parameter  V_SYNC   =  12'd5    ,
     parameter  V_BACK   =  12'd36   ,

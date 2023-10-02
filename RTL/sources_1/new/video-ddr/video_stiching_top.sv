@@ -9,7 +9,7 @@ module video_stiching_top#(
     ,   parameter Cmos2_V   =   540
 
         //the max depth of the fifo: 2^FIFO_AW
-    ,   parameter FIFO_AW = 10
+    ,   parameter FIFO_AW = 11
 		// AXI4 sink: Data Width as same as the data depth of the fifo
     ,   parameter AXI4_DATA_WIDTH = 128
         // Horizontal resolution
@@ -195,12 +195,13 @@ wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_wr_data_out   [0 : 2];
 wire                                cmos_fifo_rd_enable     [0 : 2];
 wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_rd_data_out   [0 : 2];
 
-wire                                video_burst_valid        ;
-wire                                video_burst_ready        ;
-wire                                video_fifo_wr_enable     ;
-wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_wr_data_out   ;
-wire                                video_fifo_rd_enable     ;
-wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out   ;
+wire                                video_burst_valid       ;
+wire                                video_burst_ready       ;
+wire                                video_fifo_wr_enable    ;
+wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_wr_data_out  ;
+wire                                video_fifo_rd_enable    ;
+wire                                video_fifo_rd_empty     ;
+wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out  ;
 
 
 generate 
@@ -379,17 +380,17 @@ async_fifo#(
     ,   .awfull                 ()
 
     ,   .rclk                   (video_clk                  )
-    ,   .rrst_n                 (1) 
+    ,   .rrst_n                 (rst_n                      ) 
     ,   .rdata                  (video_fifo_rd_data_out     )
-    ,   .rinc                   (video_fifo_rd_enable       )
-    ,   .rempty                 ()
+    ,   .rinc                   (video_fifo_rd_enable & !video_fifo_rd_empty)
+    ,   .rempty                 (video_fifo_rd_empty        )
     ,   .arempty                ()
 );
 
 
 fifo_to_video_ctrl u_fifo_to_video_ctrl(
         .video_clk              (video_clk                  )                          
-    ,   .video_rst_n            (1)                              
+    ,   .video_rst_n            (rst_n                      )                              
 
     ,   .M_AXI_ACLK             (M_AXI_ACLK                 )
     ,   .M_AXI_ARESETN          (M_AXI_ARESETN              )   

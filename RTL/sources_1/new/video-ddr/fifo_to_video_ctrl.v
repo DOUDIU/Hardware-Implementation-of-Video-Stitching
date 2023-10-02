@@ -20,9 +20,9 @@ module fifo_to_video_ctrl(
 reg axi_full_burst_valid = 0;
 assign AXI_FULL_BURST_VALID = axi_full_burst_valid;
 
-reg     [1:0]   shift_cnt;
+reg     [1:0]   shift_cnt = 0;
 wire            data_req;
-reg     [23:0]  pixel_data;
+reg     [23:0]  pixel_data = 0;
 
 reg             video_vs_out_d1 = 0;
 reg             video_de_out_d1 = 0;
@@ -80,7 +80,7 @@ always@(posedge video_clk or negedge video_rst_n)begin
     if(!video_rst_n)begin
         fifo_enable <= 1'b0;
     end
-    else if(shift_cnt == 2'b11) begin
+    else if(shift_cnt == 2'b10) begin
         fifo_enable <= 1'b1;
     end
     else begin
