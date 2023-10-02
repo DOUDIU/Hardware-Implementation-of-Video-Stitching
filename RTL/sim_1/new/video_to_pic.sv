@@ -1,5 +1,5 @@
 `timescale 1ns / 1ns
-module video_topic#(
+module video_to_pic#(
         parameter PIC_PATH = "..\\pic\\outcom.bmp"
     ,   parameter START_FRAME   = 1
 	,	parameter IMG_HDISP     = 640

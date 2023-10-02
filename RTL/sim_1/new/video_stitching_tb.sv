@@ -187,13 +187,13 @@ sim_cmos #(
 //     ,   .video_data     (cmos_data[1]	)//(video_data     )
 // );
 
-video_topic #(
+video_to_pic #(
         .PIC_PATH       ("..\\pic\\outcom.bmp")
     ,   .START_FRAME    (5                    )
 	,	.IMG_HDISP      (2880                 )
 	,	.IMG_VDISP      (1080                 )
     ,   .DATA_WIDTH     (24                   )
-)u_video_topic(
+)u_video_to_pic(
         .clk            (video_clk      )
     ,   .rst_n          (1)
     ,   .video_vsync    (video_vsync    )
