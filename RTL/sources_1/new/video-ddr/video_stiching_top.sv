@@ -2,12 +2,6 @@ module video_stiching_top#(
         parameter Cmos0_H   =   1920
     ,   parameter Cmos0_V   =   1080
 
-    ,   parameter Cmos1_H   =   960
-    ,   parameter Cmos1_V   =   540
-
-    ,   parameter Cmos2_H   =   960
-    ,   parameter Cmos2_V   =   540
-
         //the max depth of the fifo: 2^FIFO_AW
     ,   parameter FIFO_AW = 11
 		// AXI4 sink: Data Width as same as the data depth of the fifo
@@ -46,13 +40,13 @@ module video_stiching_top#(
 
 //----------------------------------------------------
 // Cmos port
-    ,   input           cmos_clk        [0 : 2]
-    ,   input           cmos_vsync      [0 : 2]    
-    ,   input           cmos_href       [0 : 2]    
-    ,   input           cmos_clken      [0 : 2]    
-    ,   input   [23:0]  cmos_data       [0 : 2]    
-    ,   input   [10:0]  cmos_x_pos      [0 : 2]    
-    ,   input   [10:0]  cmos_y_pos      [0 : 2]     
+    ,   input           cmos_clk        
+    ,   input           cmos_vsync          
+    ,   input           cmos_href           
+    ,   input           cmos_clken          
+    ,   input   [23:0]  cmos_data           
+    ,   input   [10:0]  cmos_x_pos          
+    ,   input   [10:0]  cmos_y_pos           
 
 //----------------------------------------------------
 // Video port
@@ -61,7 +55,7 @@ module video_stiching_top#(
     ,   output          video_href
     ,   output          video_de
     ,   output  [23:0]  video_data
-    
+
 //----------------------------------------------------
 // AXI-FULL master port
     // Global Clock Signal.
@@ -188,12 +182,12 @@ module video_stiching_top#(
     ,   output wire  M_AXI_RREADY
 );
 
-wire                                cmos_burst_valid        [0 : 2];
-wire                                cmos_burst_ready        [0 : 2];
-wire                                cmos_fifo_wr_enable     [0 : 2];
-wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_wr_data_out   [0 : 2];
-wire                                cmos_fifo_rd_enable     [0 : 2];
-wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_rd_data_out   [0 : 2];
+wire                                cmos_burst_valid        ;
+wire                                cmos_burst_ready        ;
+wire                                cmos_fifo_wr_enable     ;
+wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_wr_data_out   ;
+wire                                cmos_fifo_rd_enable     ;
+wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_rd_data_out   ;
 
 wire                                video_burst_valid       ;
 wire                                video_burst_ready       ;
@@ -204,51 +198,43 @@ wire                                video_fifo_rd_empty     ;
 wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out  ;
 
 
-generate 
-    for(genvar i = 0; i < 3; i = i + 1) begin
-        video_to_fifo_ctrl u_cmos_to_fifo_ctrl(
-                .video_rst_n            (rst_n                      )
-            ,   .video_clk              (cmos_clk[i]                )
-            ,   .video_vs_out           (cmos_vsync[i]              )
-            ,   .video_hs_out           (cmos_href[i]               )
-            ,   .video_de_out           (cmos_clken[i]              )
-            ,   .video_data_out         (cmos_data[i]               )
+    video_to_fifo_ctrl u_cmos_to_fifo_ctrl(
+            .video_rst_n            (rst_n                  )
+        ,   .video_clk              (cmos_clk               )
+        ,   .video_vs_out           (cmos_vsync             )
+        ,   .video_hs_out           (cmos_href              )
+        ,   .video_de_out           (cmos_clken             )
+        ,   .video_data_out         (cmos_data              )
 
-            ,   .M_AXI_ACLK             (M_AXI_ACLK                 )
-            ,   .M_AXI_ARESETN          (M_AXI_ARESETN              )
+        ,   .M_AXI_ACLK             (M_AXI_ACLK             )
+        ,   .M_AXI_ARESETN          (M_AXI_ARESETN          )
 
-            ,   .fifo_enable            (cmos_fifo_wr_enable[i]     )
-            ,   .fifo_data_out          (cmos_fifo_wr_data_out[i]   )
+        ,   .fifo_enable            (cmos_fifo_wr_enable    )
+        ,   .fifo_data_out          (cmos_fifo_wr_data_out  )
 
-            ,   .AXI_FULL_BURST_VALID   (cmos_burst_valid[i]        )
-            ,   .AXI_FULL_BURST_READY   (cmos_burst_ready[i]        )
-        );
-    end
-endgenerate
+        ,   .AXI_FULL_BURST_VALID   (cmos_burst_valid       )
+        ,   .AXI_FULL_BURST_READY   (cmos_burst_ready       )
+    );
 
-generate 
-    for(genvar i = 0; i < 3; i = i + 1) begin
-        async_fifo#(
-                .DSIZE                  (AXI4_DATA_WIDTH            )  
-            ,   .ASIZE                  (FIFO_AW                    )  
-            ,   .FALLTHROUGH            ("TRUE"                     )  
-        )u_async_forward_fifo(    
-                .wclk                   (cmos_clk[i]                )
-            ,   .wrst_n                 (rst_n                      )
-            ,   .winc                   (cmos_fifo_wr_enable[i]     )
-            ,   .wdata                  (cmos_fifo_wr_data_out[i]   )
-            ,   .wfull                  ()
-            ,   .awfull                 ()
+    async_fifo#(
+            .DSIZE                  (AXI4_DATA_WIDTH        )  
+        ,   .ASIZE                  (FIFO_AW                )  
+        ,   .FALLTHROUGH            ("TRUE"                 )  
+    )u_async_forward_fifo(    
+            .wclk                   (cmos_clk               )
+        ,   .wrst_n                 (rst_n                  )
+        ,   .winc                   (cmos_fifo_wr_enable    )
+        ,   .wdata                  (cmos_fifo_wr_data_out  )
+        ,   .wfull                  ()
+        ,   .awfull                 ()
 
-            ,   .rclk                   (M_AXI_ACLK                 )
-            ,   .rrst_n                 (M_AXI_ARESETN              )
-            ,   .rinc                   (cmos_fifo_rd_enable[i]     )
-            ,   .rdata                  (cmos_fifo_rd_data_out[i]   )
-            ,   .rempty                 ()
-            ,   .arempty                ()
-        );
-    end
-endgenerate
+        ,   .rclk                   (M_AXI_ACLK             )
+        ,   .rrst_n                 (M_AXI_ARESETN          )
+        ,   .rinc                   (cmos_fifo_rd_enable    )
+        ,   .rdata                  (cmos_fifo_rd_data_out  )
+        ,   .rempty                 ()
+        ,   .arempty                ()
+    );
 
 
 //---------------------------------------------------

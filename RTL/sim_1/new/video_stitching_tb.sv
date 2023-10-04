@@ -94,31 +94,23 @@ initial begin
     M_AXI_ARESETN = 1'b1;
 end
 
-reg         cmos_clk    [0 : 2] = '{0,0,0};
-reg         cmos_rst_n  [0 : 2] = '{0,0,0};
-wire        cmos_vsync  [0 : 2];
-wire        cmos_href   [0 : 2];
-wire        cmos_clken  [0 : 2];
-wire [23:0] cmos_data   [0 : 2];
-wire [10:0] cmos_x_pos  [0 : 2];
-wire [10:0] cmos_y_pos  [0 : 2];
+reg         cmos_clk   = 0;
+reg         cmos_rst_n = 0;
+wire        cmos_vsync  ;
+wire        cmos_href   ;
+wire        cmos_clken  ;
+wire [23:0] cmos_data   ;
+wire [10:0] cmos_x_pos  ;
+wire [10:0] cmos_y_pos  ;
 wire        video_vsync ;
 wire        video_hsync ;
 wire        video_de    ;
 wire [23:0] video_data  ;
 
-parameter cmos0_period = 14;
-parameter cmos1_period = 20;
-parameter cmos2_period = 24;
+parameter cmos0_period = 10;
 
-always#(cmos0_period/2) cmos_clk[0] = ~cmos_clk[0];
-initial #(20*cmos0_period) cmos_rst_n[0] = 1;
-
-always#(cmos1_period/2) cmos_clk[1] = ~cmos_clk[1];
-initial #(13*cmos1_period) cmos_rst_n[1] = 1;
-
-always#(cmos2_period/2) cmos_clk[2] = ~cmos_clk[2];
-initial #(10*cmos2_period) cmos_rst_n[2] = 1;
+always#(cmos0_period/2) cmos_clk = ~cmos_clk;
+initial #(20*cmos0_period) cmos_rst_n = 1;
 
 reg         video_clk   = 0;
 
@@ -130,46 +122,14 @@ sim_cmos #(
 	,	.IMG_HDISP 	(1920)
 	,	.IMG_VDISP 	(1080)
 )u_sim_cmos0(
-        .clk            (cmos_clk[0]	)
-    ,   .rst_n          (cmos_rst_n[0]	)
-	,   .CMOS_VSYNC     (cmos_vsync[0]	)
-	,   .CMOS_HREF      (cmos_href[0]	)
-	,   .CMOS_CLKEN     (cmos_clken[0]	)
-	,   .CMOS_DATA      (cmos_data[0]	)
-	,   .X_POS          (cmos_x_pos[0]	)
-	,   .Y_POS          (cmos_y_pos[0]	)
-);
-
-sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/poster.bmp")
-		.PIC_PATH	("..\\pic\\poster.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(540)
-)u_sim_cmos1(
-        .clk            (cmos_clk[1]	)
-    ,   .rst_n          (cmos_rst_n[1]	)
-	,   .CMOS_VSYNC     (cmos_vsync[1]	)
-	,   .CMOS_HREF      (cmos_href[1]	)
-	,   .CMOS_CLKEN     (cmos_clken[1]	)
-	,   .CMOS_DATA      (cmos_data[1]	)
-	,   .X_POS          (cmos_x_pos[1]	)
-	,   .Y_POS          (cmos_y_pos[1]	)
-);
-
-sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/poster.bmp")
-		.PIC_PATH	("..\\pic\\cobweb.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(540)
-)u_sim_cmos2(
-        .clk            (cmos_clk[2]	)
-    ,   .rst_n          (cmos_rst_n[2]	)
-	,   .CMOS_VSYNC     (cmos_vsync[2]	)
-	,   .CMOS_HREF      (cmos_href[2]	)
-	,   .CMOS_CLKEN     (cmos_clken[2]	)
-	,   .CMOS_DATA      (cmos_data[2]	)
-	,   .X_POS          (cmos_x_pos[2]	)
-	,   .Y_POS          (cmos_y_pos[2]	)
+        .clk            (cmos_clk	    )
+    ,   .rst_n          (cmos_rst_n     )
+	,   .CMOS_VSYNC     (cmos_vsync     )
+	,   .CMOS_HREF      (cmos_href      )
+	,   .CMOS_CLKEN     (cmos_clken     )
+	,   .CMOS_DATA      (cmos_data      )
+	,   .X_POS          (cmos_x_pos     )
+	,   .Y_POS          (cmos_y_pos     )
 );
 
 // video_topic #(
@@ -188,9 +148,9 @@ sim_cmos #(
 // );
 
 video_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom.bmp")
-    ,   .START_FRAME    (5                    )
-	,	.IMG_HDISP      (2880                 )
+        .PIC_PATH       ("..\\pic\\outcom2.bmp")
+    ,   .START_FRAME    (4                    )
+	,	.IMG_HDISP      (1920                 )
 	,	.IMG_VDISP      (1080                 )
     ,   .DATA_WIDTH     (24                   )
 )u_video_to_pic(
