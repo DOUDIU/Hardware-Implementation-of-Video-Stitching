@@ -1,17 +1,25 @@
 module video_stiching_top#(
+        // Horizontal resolution
         parameter Cmos0_H   =   1920
+        // Vertical resolution
     ,   parameter Cmos0_V   =   1080
+
+        //hdmi parameters
+    ,   parameter  H_SYNC   =  12'd44   
+    ,   parameter  H_BACK   =  12'd148  
+    ,   parameter  H_DISP   =  12'd1920 
+    ,   parameter  H_FRONT  =  12'd88   
+    ,   parameter  H_TOTAL  =  12'd2200 
+    ,   parameter  V_SYNC   =  12'd5   
+    ,   parameter  V_BACK   =  12'd36  
+    ,   parameter  V_DISP   =  12'd1080
+    ,   parameter  V_FRONT  =  12'd4   
+    ,   parameter  V_TOTAL  =  12'd1125
 
         //the max depth of the fifo: 2^FIFO_AW
     ,   parameter FIFO_AW = 11
 		// AXI4 sink: Data Width as same as the data depth of the fifo
     ,   parameter AXI4_DATA_WIDTH = 128
-        // Horizontal resolution
-    ,   parameter pixels_horizontal = 1920
-        // Vertical resolution
-    ,   parameter pixels_vertical = 1080
-        // Delay number of the frame, the max value is 1024(constrained by the bits of the counter)
-    ,   parameter frame_delay = 1
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
@@ -244,9 +252,8 @@ axi_full_core #(
     // FIFO parameters
         .FDW                            (AXI4_DATA_WIDTH    )
     ,   .FAW                            (FIFO_AW            )
-    ,   .FRAME_DELAY                    (1                  )
-    ,   .PIXELS_HORIZONTAL              (1920               )
-    ,   .PIXELS_VERTICAL                (1080               )
+    ,   .Cmos0_H                        (Cmos0_H            )
+    ,   .Cmos0_V                        (Cmos0_V            )
 
     //----------------------------------------------------
     // AXI-FULL parameters
@@ -374,7 +381,19 @@ async_fifo#(
 );
 
 
-fifo_to_video_ctrl u_fifo_to_video_ctrl(
+fifo_to_video_ctrl#(
+        .H_SYNC                 (H_SYNC   )
+    ,   .H_BACK                 (H_BACK   )
+    ,   .H_DISP                 (H_DISP   )
+    ,   .H_FRONT                (H_FRONT  )
+    ,   .H_TOTAL                (H_TOTAL  )
+
+    ,   .V_SYNC                 (V_SYNC   )
+    ,   .V_BACK                 (V_BACK   )
+    ,   .V_DISP                 (V_DISP   )
+    ,   .V_FRONT                (V_FRONT  )
+    ,   .V_TOTAL                (V_TOTAL  )
+)u_fifo_to_video_ctrl(
         .video_clk              (video_clk                  )                          
     ,   .video_rst_n            (rst_n                      )                              
 

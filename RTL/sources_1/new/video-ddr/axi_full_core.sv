@@ -24,9 +24,8 @@ module axi_full_core#(
     	parameter FDW = 32
     ,	parameter FAW = 8
 
-    ,   parameter FRAME_DELAY = 2 //max 1024
-    ,   parameter PIXELS_HORIZONTAL = 1920
-    ,   parameter PIXELS_VERTICAL = 1080
+	,	parameter Cmos0_H = 1920
+	,	parameter Cmos0_V = 1080
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h40000000
@@ -227,8 +226,6 @@ module axi_full_core#(
 
 	genvar i;
 
-	parameter Cmos0_H = 1920;
-	parameter Cmos0_V = 1080;
 	
 	reg				cmos_vsync_d1;
 	reg				cmos_vsync_d2;

@@ -1,4 +1,16 @@
-module fifo_to_video_ctrl(
+module fifo_to_video_ctrl#(
+    parameter  H_SYNC   =  12'd44   ,
+    parameter  H_BACK   =  12'd148  ,
+    parameter  H_DISP   =  12'd1920,
+    parameter  H_FRONT  =  12'd88   ,
+    parameter  H_TOTAL  =  12'd2200,
+
+    parameter  V_SYNC   =  12'd5    ,
+    parameter  V_BACK   =  12'd36   ,
+    parameter  V_DISP   =  12'd1080 ,
+    parameter  V_FRONT  =  12'd4    ,
+    parameter  V_TOTAL  =  12'd1125  
+)(
     
         input               video_clk
     ,   input               video_rst_n
@@ -113,7 +125,19 @@ always@(posedge video_clk or negedge video_rst_n)begin
     end
 end
 
-video_driver u_video_driver(
+video_driver#(
+        .H_SYNC   (H_SYNC   )
+    ,   .H_BACK   (H_BACK   )
+    ,   .H_DISP   (H_DISP   )
+    ,   .H_FRONT  (H_FRONT  )
+    ,   .H_TOTAL  (H_TOTAL  )
+
+    ,   .V_SYNC   (V_SYNC   )
+    ,   .V_BACK   (V_BACK   )
+    ,   .V_DISP   (V_DISP   )
+    ,   .V_FRONT  (V_FRONT  )
+    ,   .V_TOTAL  (V_TOTAL  ) 
+)u_video_driver(
         .pixel_clk      (video_clk      )
     ,   .sys_rst_n      (video_rst_n    )
 
