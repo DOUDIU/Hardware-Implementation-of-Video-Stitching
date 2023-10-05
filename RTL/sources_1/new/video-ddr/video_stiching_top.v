@@ -1,11 +1,6 @@
 module video_stiching_top#(
-        // Horizontal resolution
-        parameter Cmos0_H   =   1920
-        // Vertical resolution
-    ,   parameter Cmos0_V   =   1080
-
         //hdmi parameters
-    ,   parameter  H_SYNC   =  12'd40   
+        parameter  H_SYNC   =  12'd40   
     ,   parameter  H_BACK   =  12'd220  
     ,   parameter  H_DISP   =  12'd1280 
     ,   parameter  H_FRONT  =  12'd110   
@@ -15,6 +10,11 @@ module video_stiching_top#(
     ,   parameter  V_DISP   =  12'd720
     ,   parameter  V_FRONT  =  12'd5   
     ,   parameter  V_TOTAL  =  V_SYNC + V_BACK + V_DISP + V_FRONT
+
+        // Horizontal resolution
+    ,   parameter Cmos0_H   =   H_DISP
+        // Vertical resolution
+    ,   parameter Cmos0_V   =   V_DISP
 
         //the max depth of the fifo: 2^FIFO_AW
     ,   parameter FIFO_AW = 10
@@ -53,8 +53,8 @@ module video_stiching_top#(
     ,   input           cmos_href           
     ,   input           cmos_clken          
     ,   input   [23:0]  cmos_data           
-    ,   input   [10:0]  cmos_x_pos          
-    ,   input   [10:0]  cmos_y_pos           
+    // ,   input   [10:0]  cmos_x_pos          
+    // ,   input   [10:0]  cmos_y_pos           
 
 //----------------------------------------------------
 // Video port
@@ -300,6 +300,10 @@ axi_full_core #(
 	,	.cmos_vsync         (cmos_vsync             )
 
 //----------------------------------------------------
+// video interface 
+	,	.video_vsync        (video_vsync            )
+
+//----------------------------------------------------
 // AXI-FULL master port
     ,   .INIT_AXI_TXN       (AXI_FULL_BURST     )
     ,   .TXN_DONE           (TXN_DONE           )
@@ -375,7 +379,7 @@ async_fifo#(
     ,   .rclk                   (video_clk                  )
     ,   .rrst_n                 (rst_n                      ) 
     ,   .rdata                  (video_fifo_rd_data_out     )
-    ,   .rinc                   (video_fifo_rd_enable & !video_fifo_rd_empty)
+    ,   .rinc                   (video_fifo_rd_enable       )
     ,   .rempty                 (video_fifo_rd_empty        )
     ,   .arempty                ()
 );

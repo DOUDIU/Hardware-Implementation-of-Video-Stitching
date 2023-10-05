@@ -118,9 +118,9 @@ always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		.PIC_PATH	("..\\pic\\afternoon.bmp")
-	,	.IMG_HDISP 	(1920)
-	,	.IMG_VDISP 	(1080)
+		.PIC_PATH	("..\\pic\\eva.bmp")
+	,	.IMG_HDISP 	(1280)
+	,	.IMG_VDISP 	(720)
 )u_sim_cmos0(
         .clk            (cmos_clk	    )
     ,   .rst_n          (cmos_rst_n     )
@@ -148,10 +148,10 @@ sim_cmos #(
 // );
 
 video_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom2.bmp")
+        .PIC_PATH       ("..\\pic\\outcom.bmp")
     ,   .START_FRAME    (4                    )
-	,	.IMG_HDISP      (1920                 )
-	,	.IMG_VDISP      (1080                 )
+	,	.IMG_HDISP      (1280                 )
+	,	.IMG_VDISP      (720                  )
     ,   .DATA_WIDTH     (24                   )
 )u_video_to_pic(
         .clk            (video_clk      )
@@ -195,8 +195,6 @@ video_stiching_top #(
     ,   .cmos_href  			(cmos_href    	)
     ,   .cmos_clken 			(cmos_clken   	)
     ,   .cmos_data  			(cmos_data    	)
-    ,   .cmos_x_pos 			(cmos_x_pos   	)
-    ,   .cmos_y_pos 			(cmos_y_pos   	)
 
 //----------------------------------------------------
 // Video port

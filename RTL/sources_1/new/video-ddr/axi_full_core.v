@@ -211,6 +211,10 @@ module axi_full_core#(
 //----------------------------------------------------
 // cmos interface 
 	,	input	wire			cmos_vsync
+
+//----------------------------------------------------
+// video interface 
+	,	input	wire			video_vsync
 );
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
@@ -226,6 +230,8 @@ module axi_full_core#(
 
 	genvar i;
 
+	reg				video_vsync_d1;
+	reg				video_vsync_d2;
 	
 	reg				cmos_vsync_d1;
 	reg				cmos_vsync_d2;
@@ -233,12 +239,23 @@ module axi_full_core#(
 
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos0_max;
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	cmos_wr_buffer0_max;
-	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter_max;
-	reg [C_NO_BURSTS_REQ : 0] 	read_burst_counter_max;
+	wire [C_NO_BURSTS_REQ : 0] 	write_burst_counter_max;
+	wire [C_NO_BURSTS_REQ : 0] 	read_burst_counter_max;
 	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN / 8);
 	assign cmos_wr_buffer0_max = Cmos0_H * Cmos0_V * 4;
 	assign write_burst_counter_max	=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 	assign read_burst_counter_max	=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+
+	always @(posedge M_AXI_ACLK) begin
+		if (M_AXI_ARESETN == 0) begin        
+			video_vsync_d1	<=	0;
+			video_vsync_d2	<=	0;
+		end
+		else begin
+			video_vsync_d1	<=	video_vsync;
+			video_vsync_d2	<=	video_vsync_d1;
+		end
+	end   
 
 	always @(posedge M_AXI_ACLK) begin
 		if (M_AXI_ARESETN == 0) begin
@@ -413,7 +430,7 @@ module axi_full_core#(
 	                                                                       
 	// Next address after AWREADY indicates previous address acceptance    
 	always @(posedge M_AXI_ACLK) begin                                                                
-		if (M_AXI_ARESETN == 0) begin                                                            
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                            
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
@@ -608,7 +625,7 @@ module axi_full_core#(
 
 	// Next address after ARREADY indicates previous address acceptance  
 	always @(posedge M_AXI_ACLK) begin                                                              
-	    if (M_AXI_ARESETN == 0) begin                                                          
+	    if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1)) begin                                                          
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
