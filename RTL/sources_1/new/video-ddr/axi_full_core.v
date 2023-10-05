@@ -536,7 +536,7 @@ module axi_full_core#(
 	 Data pattern is only a simple incrementing count from 0 for each burst  */         
 	always @(posedge M_AXI_ACLK) begin                                                                             
 		if (M_AXI_ARESETN == 0) begin                                                        
-			axi_wdata <= ~128'h0;                                  
+			axi_wdata <= 0;                                  
 		end                           
 		//else if (wnext && axi_wlast)                                                  
 		//  axi_wdata <= 'b0;      

@@ -17,9 +17,9 @@ module video_stiching_top#(
     ,   parameter Cmos0_V   =   V_DISP
 
         //the max depth of the fifo: 2^FIFO_AW
-    ,   parameter FIFO_AW = 10
+    ,   parameter FIFO_AW = 11
 		// AXI4 sink: Data Width as same as the data depth of the fifo
-    ,   parameter AXI4_DATA_WIDTH = 128
+    ,   parameter AXI4_DATA_WIDTH = 64
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
@@ -206,7 +206,9 @@ wire                                video_fifo_rd_empty     ;
 wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out  ;
 
 
-    video_to_fifo_ctrl u_cmos_to_fifo_ctrl(
+    video_to_fifo_ctrl #(
+            .AXI4_DATA_WIDTH        (AXI4_DATA_WIDTH        )
+    )u_cmos_to_fifo_ctrl(
             .video_rst_n            (rst_n                  )
         ,   .video_clk              (cmos_clk               )
         ,   .video_vs_out           (cmos_vsync             )
@@ -261,7 +263,7 @@ axi_full_core #(
 	,   .C_M_AXI_BURST_LEN	            (C_M_AXI_BURST_LEN	       )   
 	,   .C_M_AXI_ID_WIDTH	            (C_M_AXI_ID_WIDTH	       )   
 	,   .C_M_AXI_ADDR_WIDTH	            (C_M_AXI_ADDR_WIDTH	       )   
-	,   .C_M_AXI_DATA_WIDTH	            (C_M_AXI_DATA_WIDTH	       )   
+	,   .C_M_AXI_DATA_WIDTH	            (AXI4_DATA_WIDTH	       )   
 	,   .C_M_AXI_AWUSER_WIDTH	        (C_M_AXI_AWUSER_WIDTH	   )   
 	,   .C_M_AXI_ARUSER_WIDTH	        (C_M_AXI_ARUSER_WIDTH	   )   
 	,   .C_M_AXI_WUSER_WIDTH	        (C_M_AXI_WUSER_WIDTH	   )   
@@ -379,7 +381,7 @@ async_fifo#(
     ,   .rclk                   (video_clk                  )
     ,   .rrst_n                 (rst_n                      ) 
     ,   .rdata                  (video_fifo_rd_data_out     )
-    ,   .rinc                   (video_fifo_rd_enable       )
+    ,   .rinc                   (video_fifo_rd_enable & !video_fifo_rd_empty)
     ,   .rempty                 (video_fifo_rd_empty        )
     ,   .arempty                ()
 );
@@ -397,6 +399,8 @@ fifo_to_video_ctrl#(
     ,   .V_DISP                 (V_DISP   )
     ,   .V_FRONT                (V_FRONT  )
     ,   .V_TOTAL                (V_TOTAL  )
+    
+    ,   .AXI4_DATA_WIDTH        (AXI4_DATA_WIDTH    )
 )u_fifo_to_video_ctrl(
         .video_clk              (video_clk                  )                          
     ,   .video_rst_n            (rst_n                      )                              

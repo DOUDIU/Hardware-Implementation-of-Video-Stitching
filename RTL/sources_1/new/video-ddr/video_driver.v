@@ -56,8 +56,10 @@ assign data_req = (((cnt_h >= H_SYNC+H_BACK-1'b1) &&
                   ?  1'b1 : 1'b0;
 
 //像素点坐标
-assign pixel_xpos = data_req ? (cnt_h - (H_SYNC + H_BACK - 1'b1)) : 12'd0;
-assign pixel_ypos = data_req ? (cnt_v - (V_SYNC + V_BACK - 1'b1)) : 12'd0;
+// assign pixel_xpos = data_req ? (cnt_h - (H_SYNC + H_BACK - 1'b1)) : 12'd0;
+// assign pixel_ypos = data_req ? (cnt_v - (V_SYNC + V_BACK - 1'b1)) : 12'd0;
+assign pixel_xpos = (cnt_h - (H_SYNC + H_BACK - 1'b1));
+assign pixel_ypos = (cnt_v - (V_SYNC + V_BACK - 1'b1));
 
 //行计数器对像素时钟计数
 always @(posedge pixel_clk ) begin
