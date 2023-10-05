@@ -85,7 +85,7 @@ parameter integer AXI_BUSER_WIDTH	    = 0    ;
 ;   wire                                    M_AXI_RREADY   
 ;
 
-localparam _PERIOD_AXI_ = 2.5;
+localparam _PERIOD_AXI_ = 1.5;
 
 always #(_PERIOD_AXI_/2) M_AXI_ACLK = ~M_AXI_ACLK;
 
