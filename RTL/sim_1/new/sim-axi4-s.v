@@ -24,8 +24,7 @@
 		parameter integer C_S_AXI_RUSER_WIDTH	= 0,
 		// Width of optional user defined signal in write response channel
 		parameter integer C_S_AXI_BUSER_WIDTH	= 0
-	)
-	(
+	)(
 		// Users to add ports here
 
 		// User ports ends

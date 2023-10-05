@@ -23,7 +23,7 @@
 module video_stitching_tb();
 
 parameter integer AXI_ID_WIDTH	        = 1    ;
-parameter integer AXI_DATA_WIDTH	    = 128  ;
+parameter integer AXI_DATA_WIDTH	    = 64   ;
 parameter integer AXI_ADDR_WIDTH	    = 32   ;
 parameter integer AXI_AWUSER_WIDTH	    = 0    ;
 parameter integer AXI_ARUSER_WIDTH	    = 0    ;

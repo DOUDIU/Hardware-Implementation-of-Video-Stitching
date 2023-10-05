@@ -434,7 +434,7 @@ module axi_full_core#(
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
-			axi_awaddr <= axi_awaddr >= axi_awaddr_cmos0_max ? 0 : axi_awaddr + burst_size_bytes;                   
+			axi_awaddr <= (axi_awaddr >= axi_awaddr_cmos0_max) ? 0 : (axi_awaddr + burst_size_bytes);                   
 		end                                                              
 		else begin                                                           
 			axi_awaddr <= axi_awaddr;
@@ -629,7 +629,7 @@ module axi_full_core#(
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
-	    	axi_araddr <= axi_araddr >= axi_awaddr_cmos0_max ? 0 : axi_araddr + burst_size_bytes;
+	    	axi_araddr <= (axi_araddr >= axi_awaddr_cmos0_max) ? 0 : (axi_araddr + burst_size_bytes);
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -697,7 +697,7 @@ module axi_full_core#(
 		end
 	    // retain the previous value                 
 	end                                            
-	                                                                        
+
 	//Check received read data against data generator                       
 	always @(posedge M_AXI_ACLK) begin                                                                 
 	    if (M_AXI_ARESETN == 0) begin
@@ -869,7 +869,7 @@ module axi_full_core#(
 						mst_exec_state  <= INIT_READ;
 						video_burst_ready <= 0;
 						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
-							start_single_burst_read <= 1'b1;                                                        
+							start_single_burst_read <= 1'b1;
 						end                                                                                       
 					else
 						start_single_burst_read <= 1'b0; //Negate to generate a pulse                                                              
