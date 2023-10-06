@@ -45,7 +45,7 @@ always@(posedge clk or negedge rst_n)begin
     end
 end
 
-integer i;
+integer i,j;
 
 always@(posedge clk or negedge rst_n)begin
    if(!rst_n) begin
@@ -53,12 +53,11 @@ always@(posedge clk or negedge rst_n)begin
    end
    else if(data_ready&data_valid) begin
         if(frame_cnt == START_FRAME - 1) begin
-            PIC_cnt                     <=  PIC_cnt + 6;
-            for(i = 0; i < 3; i = i + 1) begin:PIC_DATA_GEN1
-                vip_pixel_data[PIC_cnt+i]   <=  data[i*8+:8];
-            end
-            for(i = 4; i < 7; i = i + 1) begin:PIC_DATA_GEN2
-                vip_pixel_data[PIC_cnt+i]   <=  data[i*8+:8];
+            PIC_cnt                     <=  PIC_cnt + 3 * DATA_WIDTH / 32;
+            for(j = 0; j < DATA_WIDTH / 32; j = j + 1) begin
+                for(i = 0; i < 3; i = i + 1) begin:PIC_DATA_GEN1
+                    vip_pixel_data[PIC_cnt+2-i+j*3]   <=  data[(i+4*(DATA_WIDTH / 32 - 1 - j))*8+:8];
+                end
             end
         end
    end

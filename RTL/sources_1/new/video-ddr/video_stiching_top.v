@@ -17,9 +17,9 @@ module video_stiching_top#(
     ,   parameter Cmos0_V   =   V_DISP
 
         //the max depth of the fifo: 2^FIFO_AW
-    ,   parameter FIFO_AW = 11
+    ,   parameter FIFO_AW = 10
 		// AXI4 sink: Data Width as same as the data depth of the fifo
-    ,   parameter AXI4_DATA_WIDTH = 64
+    ,   parameter AXI4_DATA_WIDTH = 128
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
@@ -420,38 +420,38 @@ fifo_to_video_ctrl#(
     ,   .AXI_FULL_BURST_READY   (video_burst_ready          )                                      
 );
 
-axi4_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom2.bmp"  )
-    ,   .START_FRAME    (2                      )
-	,	.IMG_HDISP      (1280                   )
-	,	.IMG_VDISP      (720                    )
-    ,   .DATA_WIDTH     (AXI4_DATA_WIDTH        )
-)u_axi4_to_pic1(
-        .clk            (M_AXI_ACLK             )
-    ,   .rst_n          (M_AXI_ARESETN          )
-    ,   .data_valid     (M_AXI_WVALID           )
-    ,   .data_ready     (M_AXI_WREADY           )
-    ,   .data           (M_AXI_WDATA            )
-    ,   .addr_valid     (M_AXI_AWVALID          )
-    ,   .addr_ready     (M_AXI_AWREADY          )
-    ,   .addr           (M_AXI_AWADDR           )
-);
+// axi4_to_pic #(
+//         .PIC_PATH       ("..\\pic\\outcom2.bmp"  )
+//     ,   .START_FRAME    (2                      )
+// 	,	.IMG_HDISP      (1280                   )
+// 	,	.IMG_VDISP      (720                    )
+//     ,   .DATA_WIDTH     (AXI4_DATA_WIDTH        )
+// )u_axi4_to_pic1(
+//         .clk            (M_AXI_ACLK             )
+//     ,   .rst_n          (M_AXI_ARESETN          )
+//     ,   .data_valid     (M_AXI_WVALID           )
+//     ,   .data_ready     (M_AXI_WREADY           )
+//     ,   .data           (M_AXI_WDATA            )
+//     ,   .addr_valid     (M_AXI_AWVALID          )
+//     ,   .addr_ready     (M_AXI_AWREADY          )
+//     ,   .addr           (M_AXI_AWADDR           )
+// );
 
-axi4_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom3.bmp"  )
-    ,   .START_FRAME    (5                      )
-	,	.IMG_HDISP      (1280                   )
-	,	.IMG_VDISP      (720                    )
-    ,   .DATA_WIDTH     (AXI4_DATA_WIDTH        )
-)u_axi4_to_pic2(
-        .clk            (M_AXI_ACLK             )
-    ,   .rst_n          (M_AXI_ARESETN          )
-    ,   .data_valid     (M_AXI_RVALID           )
-    ,   .data_ready     (M_AXI_RREADY           )
-    ,   .data           (M_AXI_RDATA            )
-    ,   .addr_valid     (M_AXI_ARVALID          )
-    ,   .addr_ready     (M_AXI_ARREADY          )
-    ,   .addr           (M_AXI_ARADDR           )
-);
+// axi4_to_pic #(
+//         .PIC_PATH       ("..\\pic\\outcom3.bmp"  )
+//     ,   .START_FRAME    (5                      )
+// 	,	.IMG_HDISP      (1280                   )
+// 	,	.IMG_VDISP      (720                    )
+//     ,   .DATA_WIDTH     (AXI4_DATA_WIDTH        )
+// )u_axi4_to_pic2(
+//         .clk            (M_AXI_ACLK             )
+//     ,   .rst_n          (M_AXI_ARESETN          )
+//     ,   .data_valid     (M_AXI_RVALID           )
+//     ,   .data_ready     (M_AXI_RREADY           )
+//     ,   .data           (M_AXI_RDATA            )
+//     ,   .addr_valid     (M_AXI_ARVALID          )
+//     ,   .addr_ready     (M_AXI_ARREADY          )
+//     ,   .addr           (M_AXI_ARADDR           )
+// );
 
 endmodule

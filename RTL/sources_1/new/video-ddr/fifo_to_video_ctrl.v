@@ -104,7 +104,7 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
         axi_full_burst_valid <= 1'b0;
     end
-    else if((video_vs_out_d1 & (!video_vs_out)) | (video_de_out_d1 & (!video_de_out) & !((pixel_ypos >= V_DISP) & (pixel_xpos >= H_DISP)) )) begin
+    else if((video_vs_out_d1 & (!video_vs_out)) | (!video_de_out_d1 & (video_de_out) & !((pixel_ypos == V_DISP) & (pixel_xpos == 1)) )) begin
         axi_full_burst_valid <= 1'b1;
     end
     else if(axi_full_burst_valid & AXI_FULL_BURST_READY)begin

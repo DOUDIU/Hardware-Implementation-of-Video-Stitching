@@ -235,7 +235,9 @@ module axi_full_core#(
 	
 	reg				cmos_vsync_d1;
 	reg				cmos_vsync_d2;
-	reg				cmos_wr_buffer;
+	parameter BUFFER_MAX = 2;
+	reg		[1:0]	cmos_wr_buffer;
+	reg		[1:0]	cmos_rd_buffer;
 
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos0_max;
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	cmos_wr_buffer0_max;
@@ -273,9 +275,18 @@ module axi_full_core#(
 			cmos_wr_buffer	<=	0;                         
 		end                                                                               
 		else if(cmos_vsync_d2 & !cmos_vsync_d1) begin  
-			cmos_wr_buffer	<=	~cmos_wr_buffer;                                                                
+			cmos_wr_buffer	<=	((cmos_wr_buffer + 1) == cmos_rd_buffer) ? cmos_wr_buffer + 2 : cmos_wr_buffer + 1;                                                                
 		end                                                                      
 	end   
+
+	always @(posedge M_AXI_ACLK) begin
+		if (M_AXI_ARESETN == 0) begin
+			cmos_rd_buffer	<=	1;                         
+		end                                                                               
+		else if(video_vsync_d2 & !video_vsync_d1) begin  
+			cmos_rd_buffer	<=	cmos_wr_buffer - 1;                                                                
+		end                                                                      
+	end  
 
 	wire	frd_rdy;
 	assign	cmos_frd_rdy	= frd_rdy;
@@ -348,7 +359,7 @@ module axi_full_core#(
 	//I/O Connections. Write Address (AW)
 	assign M_AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr + (cmos_wr_buffer ? cmos_wr_buffer0_max : 0);
+	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr + cmos_wr_buffer * cmos_wr_buffer0_max;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_AWLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
@@ -373,7 +384,7 @@ module axi_full_core#(
 	assign M_AXI_BREADY	= axi_bready;
 	//Read Address (AR)
 	assign M_AXI_ARID	= 'b0;
-	assign M_AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_araddr + (cmos_wr_buffer ? 0 : cmos_wr_buffer0_max);
+	assign M_AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_araddr + cmos_rd_buffer * cmos_wr_buffer0_max;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_ARLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used

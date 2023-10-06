@@ -23,7 +23,7 @@
 module video_stitching_tb();
 
 parameter integer AXI_ID_WIDTH	        = 1    ;
-parameter integer AXI_DATA_WIDTH	    = 64   ;
+parameter integer AXI_DATA_WIDTH	    = 128  ;
 parameter integer AXI_ADDR_WIDTH	    = 32   ;
 parameter integer AXI_AWUSER_WIDTH	    = 0    ;
 parameter integer AXI_ARUSER_WIDTH	    = 0    ;
@@ -153,7 +153,37 @@ video_to_pic #(
 	,	.IMG_HDISP      (1280                 )
 	,	.IMG_VDISP      (720                  )
     ,   .DATA_WIDTH     (24                   )
-)u_video_to_pic(
+)u_video_to_pic0(
+        .clk            (video_clk      )
+    ,   .rst_n          (1)
+    ,   .video_vsync    (video_vsync    )
+    ,   .video_hsync    (video_hsync    )
+    ,   .video_de       (video_de       )
+    ,   .video_data     (video_data     )
+);
+
+video_to_pic #(
+        .PIC_PATH       ("..\\pic\\outcom3.bmp")
+    ,   .START_FRAME    (7                    )
+	,	.IMG_HDISP      (1280                 )
+	,	.IMG_VDISP      (720                  )
+    ,   .DATA_WIDTH     (24                   )
+)u_video_to_pic1(
+        .clk            (video_clk      )
+    ,   .rst_n          (1)
+    ,   .video_vsync    (video_vsync    )
+    ,   .video_hsync    (video_hsync    )
+    ,   .video_de       (video_de       )
+    ,   .video_data     (video_data     )
+);
+
+video_to_pic #(
+        .PIC_PATH       ("..\\pic\\outcom2.bmp")
+    ,   .START_FRAME    (9                    )
+	,	.IMG_HDISP      (1280                 )
+	,	.IMG_VDISP      (720                  )
+    ,   .DATA_WIDTH     (24                   )
+)u_video_to_pic2(
         .clk            (video_clk      )
     ,   .rst_n          (1)
     ,   .video_vsync    (video_vsync    )
@@ -163,8 +193,9 @@ video_to_pic #(
 );
 
 video_stiching_top #(
+        .AXI4_DATA_WIDTH        ( AXI_DATA_WIDTH)
         // Base address of targeted slave
-	    .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
+	,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   .C_M_AXI_BURST_LEN	    ( 16 )
 		// Thread ID Width

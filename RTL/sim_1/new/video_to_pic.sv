@@ -29,7 +29,7 @@ reg [ 7:0] vip_pixel_data   [0:BMP_SIZE-54];
 reg [31:0] rBmpWord;
 
 reg             video_vsync_d1 = 0;
-reg     [2:0]   frame_cnt = 0;
+reg     [11:0]  frame_cnt = 0;
 reg     [31:0]  PIC_cnt = 0;
 
 wire    [7:0]   PIC_img_R;
@@ -54,7 +54,7 @@ always@(posedge clk or negedge rst_n)begin
         frame_cnt   <=  0;
     end
     else if(video_vsync_d1 & !video_vsync)begin
-        frame_cnt   <=  frame_cnt < 7 ? frame_cnt + 1 : frame_cnt;
+        frame_cnt   <=  frame_cnt + 1;
     end
 end
 

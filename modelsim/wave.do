@@ -30,8 +30,6 @@ add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top
 add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_WDATA
 add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_WLAST
 add wave -noupdate -expand -group Write -radix unsigned /video_stitching_tb/u_video_stiching_top/u_axi_full_core/write_burst_counter_max
-add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top/u_axi4_to_pic1/PIC_cnt
-add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top/u_axi4_to_pic1/frame_cnt
 add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARUSER
 add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARSIZE
 add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARREADY
@@ -53,8 +51,6 @@ add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RID
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/video_bwr_din
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/video_bwr_vld
-add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi4_to_pic2/frame_cnt
-add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi4_to_pic2/PIC_cnt
 add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BVALID
 add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BUSER
 add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BRESP
@@ -77,8 +73,10 @@ add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/winc
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/wdata
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/wfull
+add wave -noupdate /video_stitching_tb/u_video_stiching_top/u_axi_full_core/cmos_wr_buffer
+add wave -noupdate /video_stitching_tb/u_video_stiching_top/u_axi_full_core/cmos_rd_buffer
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {577566250 ps} 0}
+WaveRestoreCursors {{Cursor 3} {38 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 305
 configure wave -valuecolwidth 98
