@@ -368,7 +368,7 @@ axi_full_core #(
 
 async_fifo#(
         .DSIZE                  (AXI4_DATA_WIDTH            )  
-    ,   .ASIZE                  (FIFO_AW                    )  
+    ,   .ASIZE                  (FIFO_AW + 1                )  
     ,   .FALLTHROUGH            ("TRUE"                     )  
 )u_async_backward_fifo(    
         .wclk                   (M_AXI_ACLK                 )

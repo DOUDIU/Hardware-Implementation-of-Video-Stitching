@@ -116,20 +116,44 @@ reg         video_clk   = 0;
 
 always#(3.37) video_clk = ~video_clk;
 
-sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		.PIC_PATH	("..\\pic\\eva.bmp")
-	,	.IMG_HDISP 	(1280)
-	,	.IMG_VDISP 	(720)
-)u_sim_cmos0(
-        .clk            (cmos_clk	    )
-    ,   .rst_n          (cmos_rst_n     )
-	,   .CMOS_VSYNC     (cmos_vsync     )
-	,   .CMOS_HREF      (cmos_href      )
-	,   .CMOS_CLKEN     (cmos_clken     )
-	,   .CMOS_DATA      (cmos_data      )
-	,   .X_POS          (cmos_x_pos     )
-	,   .Y_POS          (cmos_y_pos     )
+// sim_cmos #(
+// 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
+// 		.PIC_PATH	("..\\pic\\eva.bmp")
+// 	,	.IMG_HDISP 	(1280)
+// 	,	.IMG_VDISP 	(720)
+// )u_sim_cmos0(
+//         .clk            (cmos_clk	    )
+//     ,   .rst_n          (cmos_rst_n     )
+// 	,   .CMOS_VSYNC     (cmos_vsync     )
+// 	,   .CMOS_HREF      (cmos_href      )
+// 	,   .CMOS_CLKEN     (cmos_clken     )
+// 	,   .CMOS_DATA      (cmos_data      )
+// 	,   .X_POS          (cmos_x_pos     )
+// 	,   .Y_POS          (cmos_y_pos     )
+// );
+
+wire vtc_vs_o;
+wire vtc_hs_o;
+wire vtc_de_o;
+
+uivtc u_uivtc(
+        .vtc_clk_i  (cmos_clk	    )
+    ,   .vtc_rstn_i (cmos_rst_n     )
+    ,   .vtc_vs_o   (vtc_vs_o       )
+    ,   .vtc_hs_o   (vtc_hs_o       )
+    ,   .vtc_de_o   (vtc_de_o       )
+);
+
+uitpg u_uitpg(
+	    .tpg_clk_i          (cmos_clk	        )
+	,   .tpg_rstn_i         (cmos_rst_n         )
+	,   .tpg_vs_i           (!vtc_vs_o          )
+	,   .tpg_hs_i           (!vtc_hs_o          )
+	,   .tpg_de_i           (vtc_de_o           )
+	,   .tpg_vs_o           (cmos_vsync         )
+	,   .tpg_hs_o           (cmos_href          )
+	,   .tpg_de_o           (cmos_clken         )
+	,   .tpg_data_o         (cmos_data          )
 );
 
 // video_topic #(
@@ -163,7 +187,7 @@ video_to_pic #(
 );
 
 video_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom3.bmp")
+        .PIC_PATH       ("..\\pic\\outcom2.bmp")
     ,   .START_FRAME    (7                    )
 	,	.IMG_HDISP      (1280                 )
 	,	.IMG_VDISP      (720                  )
@@ -178,7 +202,7 @@ video_to_pic #(
 );
 
 video_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom2.bmp")
+        .PIC_PATH       ("..\\pic\\outcom3.bmp")
     ,   .START_FRAME    (9                    )
 	,	.IMG_HDISP      (1280                 )
 	,	.IMG_VDISP      (720                  )
