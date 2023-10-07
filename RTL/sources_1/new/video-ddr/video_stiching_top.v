@@ -204,47 +204,48 @@ wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_wr_data_out  ;
 wire                                video_fifo_rd_enable    ;
 wire                                video_fifo_rd_empty     ;
 wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out  ;
+wire                                video_fifo_rst_n        ;
 
 
-    video_to_fifo_ctrl #(
-            .AXI4_DATA_WIDTH        (AXI4_DATA_WIDTH        )
-    )u_cmos_to_fifo_ctrl(
-            .video_rst_n            (rst_n                  )
-        ,   .video_clk              (cmos_clk               )
-        ,   .video_vs_out           (cmos_vsync             )
-        ,   .video_hs_out           (cmos_href              )
-        ,   .video_de_out           (cmos_clken             )
-        ,   .video_data_out         (cmos_data              )
+video_to_fifo_ctrl #(
+        .AXI4_DATA_WIDTH        (AXI4_DATA_WIDTH        )
+)u_cmos_to_fifo_ctrl(
+        .video_rst_n            (rst_n                  )
+    ,   .video_clk              (cmos_clk               )
+    ,   .video_vs_out           (cmos_vsync             )
+    ,   .video_hs_out           (cmos_href              )
+    ,   .video_de_out           (cmos_clken             )
+    ,   .video_data_out         (cmos_data              )
 
-        ,   .M_AXI_ACLK             (M_AXI_ACLK             )
-        ,   .M_AXI_ARESETN          (M_AXI_ARESETN          )
+    ,   .M_AXI_ACLK             (M_AXI_ACLK             )
+    ,   .M_AXI_ARESETN          (M_AXI_ARESETN          )
 
-        ,   .fifo_enable            (cmos_fifo_wr_enable    )
-        ,   .fifo_data_out          (cmos_fifo_wr_data_out  )
+    ,   .fifo_enable            (cmos_fifo_wr_enable    )
+    ,   .fifo_data_out          (cmos_fifo_wr_data_out  )
 
-        ,   .AXI_FULL_BURST_VALID   (cmos_burst_valid       )
-        ,   .AXI_FULL_BURST_READY   (cmos_burst_ready       )
-    );
+    ,   .AXI_FULL_BURST_VALID   (cmos_burst_valid       )
+    ,   .AXI_FULL_BURST_READY   (cmos_burst_ready       )
+);
 
-    async_fifo#(
-            .DSIZE                  (AXI4_DATA_WIDTH        )  
-        ,   .ASIZE                  (FIFO_AW                )  
-        ,   .FALLTHROUGH            ("TRUE"                 )  
-    )u_async_forward_fifo(    
-            .wclk                   (cmos_clk               )
-        ,   .wrst_n                 (rst_n                  )
-        ,   .winc                   (cmos_fifo_wr_enable    )
-        ,   .wdata                  (cmos_fifo_wr_data_out  )
-        ,   .wfull                  ()
-        ,   .awfull                 ()
+async_fifo#(
+        .DSIZE                  (AXI4_DATA_WIDTH        )  
+    ,   .ASIZE                  (FIFO_AW                )  
+    ,   .FALLTHROUGH            ("TRUE"                 )  
+)u_async_forward_fifo(    
+        .wclk                   (cmos_clk               )
+    ,   .wrst_n                 (cmos_vsync             )
+    ,   .winc                   (cmos_fifo_wr_enable    )
+    ,   .wdata                  (cmos_fifo_wr_data_out  )
+    ,   .wfull                  ()
+    ,   .awfull                 ()
 
-        ,   .rclk                   (M_AXI_ACLK             )
-        ,   .rrst_n                 (M_AXI_ARESETN          )
-        ,   .rinc                   (cmos_fifo_rd_enable    )
-        ,   .rdata                  (cmos_fifo_rd_data_out  )
-        ,   .rempty                 ()
-        ,   .arempty                ()
-    );
+    ,   .rclk                   (M_AXI_ACLK             )
+    ,   .rrst_n                 (cmos_vsync             )
+    ,   .rinc                   (cmos_fifo_rd_enable    )
+    ,   .rdata                  (cmos_fifo_rd_data_out  )
+    ,   .rempty                 ()
+    ,   .arempty                ()
+);
 
 
 //---------------------------------------------------
@@ -372,16 +373,16 @@ async_fifo#(
     ,   .FALLTHROUGH            ("TRUE"                     )  
 )u_async_backward_fifo(    
         .wclk                   (M_AXI_ACLK                 )
-    ,   .wrst_n                 (M_AXI_ARESETN              )
+    ,   .wrst_n                 (video_fifo_rst_n           )
     ,   .winc                   (video_fifo_wr_enable       )
     ,   .wdata                  (video_fifo_wr_data_out     )
     ,   .wfull                  ()
     ,   .awfull                 ()
 
     ,   .rclk                   (video_clk                  )
-    ,   .rrst_n                 (rst_n                      ) 
+    ,   .rrst_n                 (video_fifo_rst_n           ) 
     ,   .rdata                  (video_fifo_rd_data_out     )
-    ,   .rinc                   (video_fifo_rd_enable & !video_fifo_rd_empty)
+    ,   .rinc                   (video_fifo_rd_enable       )
     ,   .rempty                 (video_fifo_rd_empty        )
     ,   .arempty                ()
 );
@@ -414,7 +415,8 @@ fifo_to_video_ctrl#(
 	,   .video_data_out         (video_data                 )                                  
 
     ,   .fifo_data_in           (video_fifo_rd_data_out     )                              
-    ,   .fifo_enable            (video_fifo_rd_enable       )                              
+    ,   .fifo_enable            (video_fifo_rd_enable       )  
+    ,   .fifo_rst_n             (video_fifo_rst_n           )                            
 
     ,   .AXI_FULL_BURST_VALID   (video_burst_valid          )                                      
     ,   .AXI_FULL_BURST_READY   (video_burst_ready          )                                      

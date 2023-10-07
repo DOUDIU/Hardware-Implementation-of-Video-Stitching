@@ -27,12 +27,12 @@ module fifo_to_video_ctrl#(
 
     ,   input   [AXI4_DATA_WIDTH -1 :0]     fifo_data_in
     ,   output  reg         fifo_enable
+    ,   output              fifo_rst_n
 
     ,   output              AXI_FULL_BURST_VALID
     ,   input               AXI_FULL_BURST_READY
 );
 reg axi_full_burst_valid = 0;
-assign AXI_FULL_BURST_VALID = axi_full_burst_valid;
 
 wire  [11:0]  pixel_xpos;
 wire  [11:0]  pixel_ypos;
@@ -46,23 +46,8 @@ reg             video_hs_out_d1 = 0;
 reg             video_de_out_d1 = 0;
 reg             display_trigger = 0;
 
-// always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
-//     if(!M_AXI_ARESETN | (video_vs_out_d1 & !video_vs_out))begin
-//         pixel_ypos  <= 12'd0;
-//     end
-//     else if(!video_de_out_d1 & video_de_out)begin
-//         pixel_ypos  <= pixel_ypos + 1;
-//     end 
-// end
-
-// always@(posedge video_clk or negedge video_rst_n)begin
-//     if(!video_rst_n | (video_hs_out_d1 & !video_hs_out))begin
-//         pixel_xpos  <= 12'd0;
-//     end
-//     else if(video_de_out)begin
-//         pixel_xpos  <= pixel_xpos + 1;
-//     end 
-// end
+assign AXI_FULL_BURST_VALID = axi_full_burst_valid;
+assign fifo_rst_n = !(pixel_ypos == V_DISP + 2); 
 
 always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
@@ -184,8 +169,6 @@ video_driver#(
     ,   .pixel_data     (pixel_data     )
     ,   .data_req       (data_req       )
 );
-
-
 
 
 

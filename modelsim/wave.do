@@ -30,18 +30,18 @@ add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top
 add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_WDATA
 add wave -noupdate -expand -group Write /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_WLAST
 add wave -noupdate -expand -group Write -radix unsigned /video_stitching_tb/u_video_stiching_top/u_axi_full_core/write_burst_counter_max
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARUSER
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARSIZE
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARREADY
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARVALID
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARADDR
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARQOS
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARPROT
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARLOCK
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARLEN
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARID
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARBURST
-add wave -noupdate -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARCACHE
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARUSER
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARSIZE
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARREADY
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARVALID
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARADDR
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARQOS
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARPROT
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARLOCK
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARLEN
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARID
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARBURST
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARCACHE
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RREADY
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RVALID
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RDATA
@@ -51,34 +51,52 @@ add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RID
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/video_bwr_din
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/video_bwr_vld
-add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BVALID
-add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BUSER
-add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BRESP
-add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BREADY
-add wave -noupdate -group Responce /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_BID
-add wave -noupdate -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_clk
-add wave -noupdate -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_vsync
-add wave -noupdate -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_href
-add wave -noupdate -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_de
-add wave -noupdate -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_data
-add wave -noupdate -group Video -radix unsigned /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/pixel_ypos
-add wave -noupdate -group Video -radix unsigned /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/pixel_xpos
-add wave -noupdate -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/data_req
-add wave -noupdate -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/shift_cnt
-add wave -noupdate -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/fifo_enable
-add wave -noupdate -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/fifo_data_in
+add wave -noupdate -expand -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_clk
+add wave -noupdate -expand -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_vsync
+add wave -noupdate -expand -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_href
+add wave -noupdate -expand -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_de
+add wave -noupdate -expand -group Video -color Gold /video_stitching_tb/u_video_stiching_top/video_data
+add wave -noupdate -expand -group Video -radix unsigned /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/pixel_ypos
+add wave -noupdate -expand -group Video -radix unsigned /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/pixel_xpos
+add wave -noupdate -expand -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/data_req
+add wave -noupdate -expand -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/shift_cnt
+add wave -noupdate -expand -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/fifo_enable
+add wave -noupdate -expand -group Video /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/fifo_data_in
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/rinc
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/rdata
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/rempty
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/winc
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/wdata
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/wfull
-add wave -noupdate /video_stitching_tb/u_video_stiching_top/u_axi_full_core/cmos_wr_buffer
-add wave -noupdate /video_stitching_tb/u_video_stiching_top/u_axi_full_core/cmos_rd_buffer
+add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/wrst_n
+add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/rrst_n
+add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/wptr
+add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/u_async_backward_fifo/rptr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/wrst_n
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/wq2_rptr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/wptr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/winc
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/wfull
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/wdata
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/wclk
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/waddr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rrst_n
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rq2_wptr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rptr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rinc
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rempty
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rdata
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/rclk
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/raddr
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/FALLTHROUGH
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/DSIZE
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/awfull
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/ASIZE
+add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/u_async_forward_fifo/arempty
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {38 ps} 0}
+WaveRestoreCursors {{Cursor 3} {33326786390 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 305
+configure wave -namecolwidth 247
 configure wave -valuecolwidth 98
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -92,4 +110,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {69445739482 ps}
+WaveRestoreZoom {33197294207 ps} {33468906884 ps}
