@@ -85,7 +85,7 @@ parameter integer AXI_BUSER_WIDTH	    = 0    ;
 ;   wire                                    M_AXI_RREADY   
 ;
 
-localparam _PERIOD_AXI_ = 1.5;
+localparam _PERIOD_AXI_ = 3.4;
 
 always #(_PERIOD_AXI_/2) M_AXI_ACLK = ~M_AXI_ACLK;
 
@@ -107,7 +107,7 @@ wire        video_hsync ;
 wire        video_de    ;
 wire [23:0] video_data  ;
 
-parameter cmos0_period = 10;
+parameter cmos0_period = 6;
 
 always#(cmos0_period/2) cmos_clk = ~cmos_clk;
 initial #(20*cmos0_period) cmos_rst_n = 1;
@@ -118,7 +118,7 @@ always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		.PIC_PATH	("..\\pic\\windows.bmp")
+		.PIC_PATH	("..\\pic\\eva.bmp")
 	,	.IMG_HDISP 	(1280)
 	,	.IMG_VDISP 	(720)
 )u_sim_cmos0(
@@ -221,7 +221,7 @@ video_stiching_top #(
         // Base address of targeted slave
 	,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   .C_M_AXI_BURST_LEN	    ( 16 )
+	,   .C_M_AXI_BURST_LEN	    ( 64 )
 		// Thread ID Width
 	,   .C_M_AXI_ID_WIDTH	    ( 1 )
 		// Width of Address Bus

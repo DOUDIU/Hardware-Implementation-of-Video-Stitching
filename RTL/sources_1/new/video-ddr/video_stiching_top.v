@@ -189,6 +189,7 @@ module video_stiching_top#(
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
 );
+`define SIMULATION
 
 wire                                cmos_burst_valid        ;
 wire                                cmos_burst_ready        ;
@@ -227,6 +228,7 @@ video_to_fifo_ctrl #(
     ,   .AXI_FULL_BURST_READY   (cmos_burst_ready       )
 );
 
+`ifndef SIMULATION begin
 async_fifo#(
         .DSIZE                  (AXI4_DATA_WIDTH        )  
     ,   .ASIZE                  (FIFO_AW                )  
@@ -246,7 +248,23 @@ async_fifo#(
     ,   .rempty                 ()
     ,   .arempty                ()
 );
-
+end
+`else begin
+fifo_generator_0 u_async_forward_fifo (
+.rst          (!cmos_vsync & !M_AXI_ARESETN),                  // input wire rst
+.wr_clk       (cmos_clk               ),            // input wire wr_clk
+.rd_clk       (M_AXI_ACLK             ),            // input wire rd_clk
+.din          (cmos_fifo_wr_data_out  ),                  // input wire [127 : 0] din
+.wr_en        (cmos_fifo_wr_enable    ),              // input wire wr_en
+.rd_en        (cmos_fifo_rd_enable    ),              // input wire rd_en
+.dout         (cmos_fifo_rd_data_out  ),                // output wire [127 : 0] dout
+.full         (),                // output wire full
+.empty        (),              // output wire empty
+.wr_rst_busy  (),  // output wire wr_rst_busy
+.rd_rst_busy  ()  // output wire rd_rst_busy
+);
+end
+`endif
 
 //---------------------------------------------------
 // FIFO TO AXI FULL
@@ -367,6 +385,7 @@ axi_full_core #(
     ,   .M_AXI_RREADY       (M_AXI_RREADY       )
 );
 
+`ifndef SIMULATION begin
 async_fifo#(
         .DSIZE                  (AXI4_DATA_WIDTH            )  
     ,   .ASIZE                  (FIFO_AW + 1                )  
@@ -386,6 +405,23 @@ async_fifo#(
     ,   .rempty                 (video_fifo_rd_empty        )
     ,   .arempty                ()
 );
+end
+`else begin
+    fifo_generator_0 u_async_backward_fifo (
+    .rst          (!video_fifo_rst_n & !M_AXI_ARESETN),                  // input wire rst
+    .wr_clk       (M_AXI_ACLK               ),            // input wire wr_clk
+    .rd_clk       (video_clk                ),            // input wire rd_clk
+    .din          (video_fifo_wr_data_out   ),                  // input wire [127 : 0] din
+    .wr_en        (video_fifo_wr_enable     ),              // input wire wr_en
+    .rd_en        (video_fifo_rd_enable     ),              // input wire rd_en
+    .dout         (video_fifo_rd_data_out   ),                // output wire [127 : 0] dout
+    .full         (),                // output wire full
+    .empty        (),              // output wire empty
+    .wr_rst_busy  (),  // output wire wr_rst_busy
+    .rd_rst_busy  ()  // output wire rd_rst_busy
+    );
+end
+`endif
 
 
 fifo_to_video_ctrl#(
