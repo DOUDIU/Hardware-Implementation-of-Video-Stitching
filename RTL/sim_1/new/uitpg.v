@@ -113,7 +113,7 @@ end
 
 //测试图形输出
 always @(posedge tpg_clk_i)begin
-    case(dis_mode[10:7])//截取高位，控制切换显示速度
+    case(dis_mode[9:6])//截取高位，控制切换显示速度
         4'd0:begin
 			r_reg <= h_cnt[7:0];                //水平渐变
             g_reg <= h_cnt[7:0];

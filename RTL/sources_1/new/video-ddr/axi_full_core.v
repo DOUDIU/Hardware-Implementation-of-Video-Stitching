@@ -421,7 +421,7 @@ module axi_full_core#(
 	// by burst_size_byte to point to the next address. 
 
 	always @(posedge M_AXI_ACLK) begin                                                                    
-	    if (M_AXI_ARESETN == 0) begin                                                            
+	    if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                            
 			axi_awvalid <= 1'b0;                                           
 		end                                                              
 	    // If previously not valid , start next transaction                
@@ -481,7 +481,7 @@ module axi_full_core#(
 	                                                                                    
 	// WVALID logic, similar to the axi_awvalid always block above                      
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0) begin                                                                         
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                                         
 			axi_wvalid <= 1'b0;                                                         
 		end                                                                           
 		// If previously not valid, start next transaction                              
@@ -504,7 +504,7 @@ module axi_full_core#(
 	//WLAST generation on the MSB of a counter underflow                                
 	// WVALID logic, similar to the axi_awvalid always block above                      
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0) begin                                                                         
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                                         
 			axi_wlast <= 1'b0;                                                          
 		end                                                                           
 		// axi_wlast is asserted when the write index                                   
@@ -531,7 +531,7 @@ module axi_full_core#(
 	/* Burst length counter. Uses extra counter register bit to indicate terminal       
 	 count to reduce decode logic */                                                    
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || start_single_burst_write == 1'b1) begin                                                                         
+		if (M_AXI_ARESETN == 0 || start_single_burst_write == 1'b1 || (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                                         
 			write_index <= 0;                                                           
 		end                                                                           
 		else if (wnext && (write_index != C_M_AXI_BURST_LEN-1)) begin                                                                         
@@ -546,7 +546,7 @@ module axi_full_core#(
 	/* Write Data Generator                                                             
 	 Data pattern is only a simple incrementing count from 0 for each burst  */         
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0) begin                                                        
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                        
 			axi_wdata <= 0;                                  
 		end                           
 		//else if (wnext && axi_wlast)                                                  
@@ -618,7 +618,7 @@ module axi_full_core#(
 	//manner as the write address channel.
 
 	always @(posedge M_AXI_ACLK) begin
-		if (M_AXI_ARESETN == 0) begin                                                          
+		if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1)) begin                                                          
 			axi_arvalid <= 1'b0;                                         
 		end                                                            
 		// If previously not valid, start next transaction              
@@ -659,7 +659,7 @@ module axi_full_core#(
 	// Burst length counter. Uses extra counter register bit to indicate    
 	// terminal count to reduce decode logic                                
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || start_single_burst_read) begin                                                             
+	    if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1)) begin                                                             
 			read_index <= 0;                                                
 		end                                                               
 	    else if (rnext && (read_index != C_M_AXI_BURST_LEN-1)) begin                                                             
@@ -693,7 +693,7 @@ module axi_full_core#(
 	 more data, so no need to throttle the RREADY signal                    
 	 */                                                                     
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0) begin                                                             
+	    if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1)) begin                                                             
 			axi_rready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge rdata/rresp with axi_rready by the master     
@@ -792,7 +792,7 @@ module axi_full_core#(
 	// write_burst_counter counter keeps track with the number of burst transaction initiated            
 	// against the number of burst transactions the master needs to initiate                                   
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0) begin                                                                                                 
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                                                                 
 			write_burst_counter <= 'b0;                                                                         
 		end                                                                                                   
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                                                                 
@@ -808,7 +808,7 @@ module axi_full_core#(
 	// read_burst_counter counter keeps track with the number of burst transaction initiated                   
 	// against the number of burst transactions the master needs to initiate                                   
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0) begin                                                                                                 
+		if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1)) begin                                                                                                 
 			read_burst_counter <= 'b0;                                                                          
 		end                                                                                                   
 		else if (M_AXI_ARREADY && axi_arvalid) begin                                                                                                 
@@ -858,7 +858,7 @@ module axi_full_core#(
 				// initiate a write transaction. Write transactions will be                                     
 				// issued until burst_write_active signal is asserted.                                          
 				// write controller                                                                             
-				if (writes_done) begin                                                                                         
+				if (writes_done | (cmos_vsync_d2 & !cmos_vsync_d1)) begin                                                                                         
 					mst_exec_state <= IDLE;                                                              
 				end                                                                                           
 				else begin                                                                                         
@@ -873,7 +873,7 @@ module axi_full_core#(
 					end
 				end
 				INIT_READ : begin
-					if (reads_done) begin
+					if (reads_done | (video_vsync_d2 & !video_vsync_d1)) begin
 						mst_exec_state <= IDLE;
 					end                                                                                           
 					else begin                                                                                         
@@ -898,7 +898,7 @@ module axi_full_core#(
 	// is initiated by the assertion of start_single_burst_write. burst_write_active                          
 	// signal remains asserted until the burst write is accepted by the slave                                 
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0)                                                                                 
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1))                                                                                 
 			burst_write_active <= 1'b0;                                                                           
 																												
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
@@ -915,7 +915,7 @@ module axi_full_core#(
 	 // committed.                                                                                              
 	                                                                                                            
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0)                                                                                 
+		if (M_AXI_ARESETN == 0 | (cmos_vsync_d2 & !cmos_vsync_d1))                                                                                 
 			writes_done <= 1'b0;                                                                                  
 																												
 		//The writes_done should be associated with a bready response                                           
@@ -930,7 +930,7 @@ module axi_full_core#(
 	// is initiated by the assertion of start_single_burst_write. start_single_burst_read                     
 	// signal remains asserted until the burst read is accepted by the master                                 
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0)                                                                                 
+		if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1))                                                                                 
 			burst_read_active <= 1'b0;                                                                            
 																												
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
@@ -948,7 +948,7 @@ module axi_full_core#(
 	// committed.                                                                                              
 																											
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0)                                                                                 
+		if (M_AXI_ARESETN == 0 | (video_vsync_d2 & !video_vsync_d1))                                                                                 
 			reads_done <= 1'b0;                                                                                   
 																												
 		//The reads_done should be associated with a rready response                                            

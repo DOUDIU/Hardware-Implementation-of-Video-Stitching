@@ -113,12 +113,12 @@ always#(cmos0_period/2) cmos_clk = ~cmos_clk;
 initial #(20*cmos0_period) cmos_rst_n = 1;
 
 reg         video_clk   = 0;
-
+initial #1 video_clk = 1;
 always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		.PIC_PATH	("..\\pic\\eva.bmp")
+		.PIC_PATH	("..\\pic\\windows.bmp")
 	,	.IMG_HDISP 	(1280)
 	,	.IMG_VDISP 	(720)
 )u_sim_cmos0(
