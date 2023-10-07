@@ -42,6 +42,8 @@ add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stich
 add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARID
 add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARBURST
 add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_ARCACHE
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/AXI_FULL_BURST_VALID
+add wave -noupdate -expand -group Address_read /video_stitching_tb/u_video_stiching_top/u_fifo_to_video_ctrl/AXI_FULL_BURST_READY
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RREADY
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RVALID
 add wave -noupdate -expand -group Read /video_stitching_tb/u_video_stiching_top/u_axi_full_core/M_AXI_RDATA
@@ -73,19 +75,19 @@ add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/genblk2/u_async_backward_fifo/empty
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/genblk2/u_async_backward_fifo/dout
 add wave -noupdate -group backward_fifo /video_stitching_tb/u_video_stiching_top/genblk2/u_async_backward_fifo/din
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/wr_rst_busy
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/wr_clk
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rst
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rd_rst_busy
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rd_clk
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/full
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/empty
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rd_en
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/dout
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/wr_en
-add wave -noupdate -expand -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/din
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/wr_rst_busy
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/wr_clk
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rst
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rd_rst_busy
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rd_clk
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/full
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/empty
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/rd_en
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/dout
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/wr_en
+add wave -noupdate -group forward_fifo /video_stitching_tb/u_video_stiching_top/genblk1/u_async_forward_fifo/din
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {81 ps} 0}
+WaveRestoreCursors {{Cursor 3} {16594318100 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 247
 configure wave -valuecolwidth 98
@@ -101,4 +103,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {907399842 ps}
+WaveRestoreZoom {16483723288 ps} {16766651312 ps}

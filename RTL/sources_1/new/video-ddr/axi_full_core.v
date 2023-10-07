@@ -224,7 +224,7 @@ module axi_full_core#(
 	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
 	// Burst length for transactions, in C_M_AXI_DATA_WIDTHs.
 	// Non-2^n lengths will eventually cause bursts across 4K address boundaries.
-	localparam integer C_MASTER_LENGTH	= 12;
+	localparam integer C_MASTER_LENGTH	= 14;
 	// total number of burst transfers is master length divided by burst length and burst size
 	localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((C_M_AXI_BURST_LEN*C_M_AXI_DATA_WIDTH/8)-1);
 
@@ -236,8 +236,8 @@ module axi_full_core#(
 	reg				cmos_vsync_d1;
 	reg				cmos_vsync_d2;
 	parameter BUFFER_MAX = 2;
-	reg		[1:0]	cmos_wr_buffer;
-	reg		[1:0]	cmos_rd_buffer;
+	reg		[0:0]	cmos_wr_buffer;
+	reg		[0:0]	cmos_rd_buffer;
 
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos0_max;
 	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	cmos_wr_buffer0_max;
@@ -245,8 +245,8 @@ module axi_full_core#(
 	wire [C_NO_BURSTS_REQ : 0] 	read_burst_counter_max;
 	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN / 8);
 	assign cmos_wr_buffer0_max = Cmos0_H * Cmos0_V * 4;
-	assign write_burst_counter_max	=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-	assign read_burst_counter_max	=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+	assign write_burst_counter_max	=	(2 * Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+	assign read_burst_counter_max	=	(2 * Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 
 	always @(posedge M_AXI_ACLK) begin
 		if (M_AXI_ARESETN == 0) begin        
@@ -275,7 +275,7 @@ module axi_full_core#(
 			cmos_wr_buffer	<=	0;                         
 		end                                                                               
 		else if(cmos_vsync_d2 & !cmos_vsync_d1) begin  
-			cmos_wr_buffer	<=	((cmos_wr_buffer + 1) == cmos_rd_buffer) ? cmos_wr_buffer + 2 : cmos_wr_buffer + 1;                                                                
+			cmos_wr_buffer	<=	!cmos_wr_buffer;                                                                
 		end                                                                      
 	end   
 
@@ -284,7 +284,7 @@ module axi_full_core#(
 			cmos_rd_buffer	<=	1;                         
 		end                                                                               
 		else if(video_vsync_d2 & !video_vsync_d1) begin  
-			cmos_rd_buffer	<=	cmos_wr_buffer - 1;                                                                
+			cmos_rd_buffer	<=	!cmos_wr_buffer;                                                                
 		end                                                                      
 	end  
 
@@ -446,8 +446,8 @@ module axi_full_core#(
 		end                                                              
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
 			axi_awaddr[27:0] 	<= 	(axi_awaddr[27:0] >= axi_awaddr_cmos0_max) ? 0 : (axi_awaddr[27:0] + burst_size_bytes); 
-			axi_awaddr[29:28]	<=	cmos_wr_buffer;
-			axi_awaddr[31:30]	<=	2'b00;
+			axi_awaddr[28:28]	<=	cmos_wr_buffer;
+			axi_awaddr[31:29]	<=	0;
 		end                                                              
 		else begin                                                           
 			axi_awaddr <= axi_awaddr;
@@ -643,8 +643,8 @@ module axi_full_core#(
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
 	    	axi_araddr[27:0]	<= 	(axi_araddr[27:0] >= axi_awaddr_cmos0_max) ? 0 : (axi_araddr[27:0] + burst_size_bytes);
-			axi_araddr[29:28]	<=	cmos_rd_buffer;
-			axi_araddr[31:30]	<=	2'b00;
+			axi_araddr[28:28]	<=	cmos_rd_buffer;
+			axi_araddr[31:29]	<=	0;
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
