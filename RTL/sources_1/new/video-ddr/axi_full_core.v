@@ -245,8 +245,8 @@ module axi_full_core#(
 	wire [C_NO_BURSTS_REQ : 0] 	read_burst_counter_max;
 	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN / 8);
 	assign cmos_wr_buffer0_max = Cmos0_H * Cmos0_V * 4;
-	assign write_burst_counter_max	=	(2 * Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-	assign read_burst_counter_max	=	(2 * Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+	assign write_burst_counter_max	=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+	assign read_burst_counter_max	=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 
 	always @(posedge M_AXI_ACLK) begin
 		if (M_AXI_ARESETN == 0) begin        

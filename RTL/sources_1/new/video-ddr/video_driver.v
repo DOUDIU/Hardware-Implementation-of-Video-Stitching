@@ -11,78 +11,86 @@ module video_driver#(
     parameter  V_FRONT  =  12'd4    ,
     parameter  V_TOTAL  =  12'd1125  
 )(
-        input           pixel_clk   
-    ,   input           sys_rst_n   
+        input               pixel_clk   
+    ,   input               sys_rst_n   
 
-    ,   output          video_hs    
-    ,   output          video_vs    
-    ,   output          video_de    
-    ,   output  [23:0]  video_rgb   
+    ,   output  reg         video_hs    
+    ,   output  reg         video_vs    
+    ,   output  reg         video_de    
+    ,   output      [23:0]  video_rgb   
 
-    ,   output  [11:0]  pixel_xpos
-    ,   output  [11:0]  pixel_ypos
-    ,   input   [23:0]  pixel_data
-    ,   output          data_req
+    ,   output  reg [11:0]  pixel_xpos
+    ,   output  reg [11:0]  pixel_ypos
+    ,   input       [23:0]  pixel_data
+    ,   output  reg         data_req
 );
 
+reg [12:0]  cnt_h;
+reg [12:0]  cnt_v;
+reg [12:0]  cnt_h_buf;
+reg [12:0]  cnt_v_buf;
 
-//reg define
-reg  [11:0]  cnt_h = 0;
-reg  [11:0]  cnt_v = 0;
-
-//wire define
-wire        video_en;
-//*****************************************************
-//**                    main code
-//*****************************************************
-
-assign video_de  = video_en;
-
-assign video_hs  = ( cnt_h < H_SYNC ) ? 1'b0 : 1'b1;  //行同步信号赋值
-assign video_vs  = ( cnt_v < V_SYNC ) ? 1'b0 : 1'b1;  //场同步信号赋值
-
-//使能RGB数据输出
-assign video_en  = (((cnt_h >= H_SYNC+H_BACK) && (cnt_h < H_SYNC+H_BACK+H_DISP))
-                 &&((cnt_v >= V_SYNC+V_BACK) && (cnt_v < V_SYNC+V_BACK+V_DISP)))
-                 ?  1'b1 : 1'b0;
-
-//RGB888数据输出
-assign video_rgb = video_en ? pixel_data : 24'd0;
-
-//请求像素点颜色数据输入
-assign data_req = (((cnt_h >= H_SYNC+H_BACK-1'b1) && 
-                    (cnt_h < H_SYNC+H_BACK+H_DISP-1'b1))
-                  && ((cnt_v >= V_SYNC+V_BACK) && (cnt_v < V_SYNC+V_BACK+V_DISP)))
-                  ?  1'b1 : 1'b0;
-
-//像素点坐标
-// assign pixel_xpos = data_req ? (cnt_h - (H_SYNC + H_BACK - 1'b1)) : 12'd0;
-// assign pixel_ypos = data_req ? (cnt_v - (V_SYNC + V_BACK - 1'b1)) : 12'd0;
-assign pixel_xpos = (cnt_h - (H_SYNC + H_BACK - 1'b1));
-assign pixel_ypos = (cnt_v - (V_SYNC + V_BACK - 1'b1));
-
-//行计数器对像素时钟计数
 always @(posedge pixel_clk ) begin
-    if (!sys_rst_n)
-        cnt_h <= 12'd0;
+    if (!sys_rst_n) begin
+        cnt_h_buf <= 12'd0;
+    end
     else begin
-        if(cnt_h < H_TOTAL - 1'b1)
-            cnt_h <= cnt_h + 1'b1;
-        else 
-            cnt_h <= 12'd0;
+        if(cnt_h_buf < H_TOTAL - 1'b1) begin
+            cnt_h_buf <= cnt_h_buf + 1'b1;
+        end
+        else begin
+            cnt_h_buf <= 12'd0;
+        end
     end
 end
 
-//场计数器对行计数
 always @(posedge pixel_clk ) begin
-    if (!sys_rst_n)
-        cnt_v <= 12'd0;
-    else if(cnt_h == H_TOTAL - 1'b1) begin
-        if(cnt_v < V_TOTAL - 1'b1)
-            cnt_v <= cnt_v + 1'b1;
-        else 
-            cnt_v <= 12'd0;
+    if (!sys_rst_n) begin
+        cnt_v_buf <= 12'd0;
+    end
+    else if(cnt_h_buf == H_TOTAL - 1'b1) begin
+        if(cnt_v_buf < V_TOTAL - 1'b1) begin
+            cnt_v_buf <= cnt_v_buf + 1'b1;
+        end
+        else begin 
+            cnt_v_buf <= 12'd0;
+        end
     end
 end
+
+always @(posedge pixel_clk ) begin
+    cnt_h   <=  cnt_h_buf;  
+end
+
+always @(posedge pixel_clk ) begin
+    cnt_v   <=  cnt_v_buf;
+end
+
+always @(posedge pixel_clk) begin
+    video_hs  <= ( cnt_h < H_SYNC ) ? 1'b0 : 1'b1;
+    video_vs  <= ( cnt_v < V_SYNC ) ? 1'b0 : 1'b1;
+end
+
+always @(posedge pixel_clk) begin
+    video_de    <= (((cnt_h >= H_SYNC+H_BACK) && (cnt_h < H_SYNC+H_BACK+H_DISP))
+                &&((cnt_v >= V_SYNC+V_BACK) && (cnt_v < V_SYNC+V_BACK+V_DISP)))
+                ?  1'b1 : 1'b0;
+end
+
+always @(posedge pixel_clk) begin
+    data_req    <= (((cnt_h >= H_SYNC+H_BACK-1'b1) && (cnt_h < H_SYNC+H_BACK+H_DISP-1'b1))
+                && ((cnt_v >= V_SYNC+V_BACK) && (cnt_v < V_SYNC+V_BACK+V_DISP)))
+                ?  1'b1 : 1'b0;
+end
+
+always @(posedge pixel_clk) begin
+    pixel_xpos <= cnt_h - (H_SYNC + H_BACK - 1'b1);
+end
+
+always @(posedge pixel_clk) begin
+    pixel_ypos <= cnt_v - (V_SYNC + V_BACK - 1'b1);
+end
+
+assign  video_rgb   = video_de ? pixel_data : 24'd0;
 
 endmodule

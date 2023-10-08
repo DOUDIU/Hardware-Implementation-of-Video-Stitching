@@ -118,7 +118,7 @@ always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
 		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		.PIC_PATH	("..\\pic\\windows.bmp")
+		.PIC_PATH	("..\\pic\\eva.bmp")
 	,	.IMG_HDISP 	(1280)
 	,	.IMG_VDISP 	(720)
 )u_sim_cmos0(
@@ -221,7 +221,7 @@ video_stiching_top #(
         // Base address of targeted slave
 	,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   .C_M_AXI_BURST_LEN	    ( 128 )
+	,   .C_M_AXI_BURST_LEN	    ( 64 )
 		// Thread ID Width
 	,   .C_M_AXI_ID_WIDTH	    ( 1 )
 		// Width of Address Bus

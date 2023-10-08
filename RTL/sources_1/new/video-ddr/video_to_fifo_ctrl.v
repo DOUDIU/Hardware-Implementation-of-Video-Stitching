@@ -47,7 +47,6 @@ reg [1:0]   buf_cnt;
 reg     video_hs_out_d1;
 reg     video_hs_out_d2;
 reg     de_valid_flag = 0;
-reg     [1:0]   burst_cnt = 0;
 
 assign  fifo_data_out   =   fifo_data_out_buffer;
 
@@ -106,21 +105,9 @@ end
 
 always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
     if(!M_AXI_ARESETN) begin
-        burst_cnt <=  0;
-    end 
-    else if(video_hs_out_d2 & !video_hs_out_d1 & de_valid_flag)begin
-        burst_cnt <=  burst_cnt + 1;
-    end
-    else begin
-        burst_cnt <=  burst_cnt >= 2 ? 0 : burst_cnt;
-    end
-end
-
-always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
-    if(!M_AXI_ARESETN) begin
         AXI_FULL_BURST_VALID <=  0;
     end 
-    else if(burst_cnt == 2)begin
+    else if(video_hs_out_d2 & !video_hs_out_d1 & de_valid_flag)begin
         AXI_FULL_BURST_VALID <=  1;
     end
     else if(AXI_FULL_BURST_VALID & AXI_FULL_BURST_READY) begin

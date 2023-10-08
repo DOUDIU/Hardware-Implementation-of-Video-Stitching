@@ -34,7 +34,6 @@ module fifo_to_video_ctrl#(
 );
 reg axi_full_burst_valid = 0;
 
-wire  [11:0]  pixel_xpos;
 wire  [11:0]  pixel_ypos;
 
 reg     [1:0]   shift_cnt = 0;
@@ -42,9 +41,9 @@ wire            data_req;
 reg     [23:0]  pixel_data = 0;
 
 reg             video_vs_out_d1 = 0;
-reg             video_hs_out_d1 = 0;
+reg             video_vs_out_d2 = 0;
+reg             video_de_out_d2 = 0;
 reg             video_de_out_d1 = 0;
-reg             display_trigger = 0;
 
 assign AXI_FULL_BURST_VALID = axi_full_burst_valid;
 assign fifo_rst_n = !(pixel_ypos == V_DISP + 2); 
@@ -52,36 +51,22 @@ assign fifo_rst_n = !(pixel_ypos == V_DISP + 2);
 always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
         video_vs_out_d1 <= 1'b0;
+        video_vs_out_d2 <= 1'b0;
     end
     else begin
         video_vs_out_d1 <= video_vs_out;
-    end 
-end
-
-always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
-    if(!M_AXI_ARESETN)begin
-        video_hs_out_d1 <= 1'b0;
-    end
-    else begin
-        video_hs_out_d1 <= video_hs_out;
+        video_vs_out_d2 <= video_vs_out_d1;
     end 
 end
 
 always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
         video_de_out_d1 <= 1'b0;
+        video_de_out_d2 <= 1'b0;
     end
     else begin
         video_de_out_d1 <= video_de_out;
-    end 
-end
-
-always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
-    if(!M_AXI_ARESETN)begin
-        display_trigger <= 1'b0;
-    end
-    else if(axi_full_burst_valid & AXI_FULL_BURST_READY)begin
-        display_trigger <= 1'b1;
+        video_de_out_d2 <= video_de_out_d1;
     end 
 end
 
@@ -89,7 +74,7 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
         axi_full_burst_valid <= 1'b0;
     end
-    else if((!video_vs_out_d1 & (video_vs_out)) | (pixel_ypos[0] ==1 & !video_de_out_d1 & (video_de_out) & !((pixel_ypos >= V_DISP - 1) & (pixel_xpos == 1)) )) begin
+    else if((!video_vs_out_d2 & video_vs_out_d1) | (!video_de_out_d2 & video_de_out_d1 & !(pixel_ypos == V_DISP))) begin
         axi_full_burst_valid <= 1'b1;
     end
     else if(axi_full_burst_valid & AXI_FULL_BURST_READY)begin
@@ -164,7 +149,7 @@ video_driver#(
     ,   .video_de       (video_de_out   )
     ,   .video_rgb      (video_data_out )
 
-    ,   .pixel_xpos     (pixel_xpos     )
+    ,   .pixel_xpos     ()
     ,   .pixel_ypos     (pixel_ypos     )
     ,   .pixel_data     (pixel_data     )
     ,   .data_req       (data_req       )
