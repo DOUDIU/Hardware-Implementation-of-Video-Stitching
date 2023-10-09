@@ -14,7 +14,7 @@ module video_stiching_top#(
     ,   parameter AXI4_DATA_WIDTH = 128
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
+	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h0F000000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
@@ -39,14 +39,34 @@ module video_stiching_top#(
         input           rst_n
 
 //----------------------------------------------------
-// Cmos port
-    ,   input           cmos_clk        [0 : 2]
-    ,   input           cmos_vsync      [0 : 2]    
-    ,   input           cmos_href       [0 : 2]    
-    ,   input           cmos_clken      [0 : 2]    
-    ,   input   [23:0]  cmos_data       [0 : 2]    
-    ,   input   [10:0]  cmos_x_pos      [0 : 2]    
-    ,   input   [10:0]  cmos_y_pos      [0 : 2]     
+// Cmos port0
+    ,   input           cmos0_clk        
+    ,   input           cmos0_vsync      
+    ,   input           cmos0_href       
+    ,   input           cmos0_clken      
+    ,   input   [23:0]  cmos0_data       
+    ,   input   [10:0]  cmos0_x_pos      
+    ,   input   [10:0]  cmos0_y_pos      
+
+//----------------------------------------------------
+// Cmos port1
+    ,   input           cmos1_clk       
+    ,   input           cmos1_vsync     
+    ,   input           cmos1_href      
+    ,   input           cmos1_clken     
+    ,   input   [23:0]  cmos1_data      
+    ,   input   [10:0]  cmos1_x_pos     
+    ,   input   [10:0]  cmos1_y_pos     
+
+//----------------------------------------------------
+// Cmos port2
+    ,   input           cmos2_clk       
+    ,   input           cmos2_vsync     
+    ,   input           cmos2_href      
+    ,   input           cmos2_clken     
+    ,   input   [23:0]  cmos2_data      
+    ,   input   [10:0]  cmos2_x_pos     
+    ,   input   [10:0]  cmos2_y_pos     
 
 //----------------------------------------------------
 // Video port
@@ -181,6 +201,38 @@ module video_stiching_top#(
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
 );
+wire           cmos_clk        [0 : 2]  ;
+wire           cmos_vsync      [0 : 2]  ;
+wire           cmos_href       [0 : 2]  ;
+wire           cmos_clken      [0 : 2]  ;
+wire   [23:0]  cmos_data       [0 : 2]  ;
+wire   [10:0]  cmos_x_pos      [0 : 2]  ;
+wire   [10:0]  cmos_y_pos      [0 : 2]  ;
+
+assign      cmos_clk   [0]  =   cmos0_clk       ;
+assign      cmos_vsync [0]  =   cmos0_vsync     ;
+assign      cmos_href  [0]  =   cmos0_href      ;
+assign      cmos_clken [0]  =   cmos0_clken     ;
+assign      cmos_data  [0]  =   cmos0_data      ;
+assign      cmos_x_pos [0]  =   cmos0_x_pos     ;
+assign      cmos_y_pos [0]  =   cmos0_y_pos     ;
+
+assign      cmos_clk   [1]  =   cmos1_clk       ;
+assign      cmos_vsync [1]  =   cmos1_vsync     ;
+assign      cmos_href  [1]  =   cmos1_href      ;
+assign      cmos_clken [1]  =   cmos1_clken     ;
+assign      cmos_data  [1]  =   cmos1_data      ;
+assign      cmos_x_pos [1]  =   cmos1_x_pos     ;
+assign      cmos_y_pos [1]  =   cmos1_y_pos     ;
+
+assign      cmos_clk   [2]  =   cmos2_clk       ;
+assign      cmos_vsync [2]  =   cmos2_vsync     ;
+assign      cmos_href  [2]  =   cmos2_href      ;
+assign      cmos_clken [2]  =   cmos2_clken     ;
+assign      cmos_data  [2]  =   cmos2_data      ;
+assign      cmos_x_pos [2]  =   cmos2_x_pos     ;
+assign      cmos_y_pos [2]  =   cmos2_y_pos     ;
+
 
 wire                                cmos_burst_valid        [0 : 2];
 wire                                cmos_burst_ready        [0 : 2];
@@ -269,11 +321,21 @@ axi_full_core #(
 
 //----------------------------------------------------
 // forward FIFO read interface
-        .cmos_frd_rdy  	    (cmos_fifo_rd_enable    )
-    ,   .cmos_frd_vld  	    ()
-    ,   .cmos_frd_din  	    (cmos_fifo_rd_data_out  )
-    ,   .cmos_frd_empty	    ()
-    ,   .cmos_frd_cnt	    ()
+        .cmos0_frd_rdy      (cmos_fifo_rd_enable[0] )
+    ,   .cmos0_frd_vld      ()
+    ,   .cmos0_frd_din      (cmos_fifo_rd_data_out[0] )
+    ,   .cmos0_frd_empty    ()
+    ,   .cmos0_frd_cnt	    ()
+    ,   .cmos1_frd_rdy      (cmos_fifo_rd_enable[1] )
+    ,   .cmos1_frd_vld      ()
+    ,   .cmos1_frd_din      (cmos_fifo_rd_data_out[1] )
+    ,   .cmos1_frd_empty    ()
+    ,   .cmos1_frd_cnt	    ()
+    ,   .cmos2_frd_rdy      (cmos_fifo_rd_enable[2] )
+    ,   .cmos2_frd_vld      ()
+    ,   .cmos2_frd_din      (cmos_fifo_rd_data_out[2] )
+    ,   .cmos2_frd_empty    ()
+    ,   .cmos2_frd_cnt	    ()
 
 //----------------------------------------------------
 // backward FIFO write interface
@@ -285,8 +347,12 @@ axi_full_core #(
 
 //----------------------------------------------------
 // cmos burst handshake 
-	,	.cmos_burst_valid   (cmos_burst_valid       )
-	,	.cmos_burst_ready   (cmos_burst_ready       )
+	,	.cmos0_burst_valid  (cmos_burst_valid[0]    )
+	,	.cmos1_burst_valid  (cmos_burst_valid[1]    )
+	,	.cmos2_burst_valid  (cmos_burst_valid[2]    )
+	,	.cmos0_burst_ready  (cmos_burst_ready[0]    )
+	,	.cmos1_burst_ready  (cmos_burst_ready[1]    )
+	,	.cmos2_burst_ready  (cmos_burst_ready[2]    )
 
 //----------------------------------------------------
 // video burst handshake 
@@ -295,7 +361,9 @@ axi_full_core #(
     
 //----------------------------------------------------
 // cmos interface 
-	,	.cmos_vsync         (cmos_vsync             )
+	,	.cmos0_vsync        (cmos_vsync[0]          )
+	,	.cmos1_vsync        (cmos_vsync[1]          )
+	,	.cmos2_vsync        (cmos_vsync[2]          )
 
 //----------------------------------------------------
 // video interface 

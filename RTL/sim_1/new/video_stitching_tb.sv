@@ -140,7 +140,7 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\cobweb.bmp")
+		.PIC_PATH	("..\\pic\\poster.bmp")
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
 )u_sim_cmos1(
@@ -155,7 +155,7 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\poster.bmp")
+		.PIC_PATH	("..\\pic\\cobweb.bmp")
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
 )u_sim_cmos2(
@@ -185,10 +185,8 @@ video_to_pic #(
 );
 
 video_stiching_top #(
-        // Base address of targeted slave
-	    .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   .C_M_AXI_BURST_LEN	    ( 16 )
+	    .C_M_AXI_BURST_LEN	    ( 16 )
 		// Thread ID Width
 	,   .C_M_AXI_ID_WIDTH	    ( 1 )
 		// Width of Address Bus
@@ -212,13 +210,29 @@ video_stiching_top #(
 
 //----------------------------------------------------
 // Cmos port
-	,	.cmos_clk				(cmos_clk		)
-    ,   .cmos_vsync 			(cmos_vsync   	)
-    ,   .cmos_href  			(cmos_href    	)
-    ,   .cmos_clken 			(cmos_clken   	)
-    ,   .cmos_data  			(cmos_data    	)
-    ,   .cmos_x_pos 			(cmos_x_pos   	)
-    ,   .cmos_y_pos 			(cmos_y_pos   	)
+	,	.cmos0_clk				(cmos_clk  [0]  )
+    ,   .cmos0_vsync 			(cmos_vsync[0] 	)
+    ,   .cmos0_href  			(cmos_href [0] 	)
+    ,   .cmos0_clken 			(cmos_clken[0] 	)
+    ,   .cmos0_data  			(cmos_data [0] 	)
+    ,   .cmos0_x_pos 			(cmos_x_pos[0] 	)
+    ,   .cmos0_y_pos 			(cmos_y_pos[0] 	)
+
+	,	.cmos1_clk				(cmos_clk  [1]  )
+    ,   .cmos1_vsync 			(cmos_vsync[1] 	)
+    ,   .cmos1_href  			(cmos_href [1] 	)
+    ,   .cmos1_clken 			(cmos_clken[1] 	)
+    ,   .cmos1_data  			(cmos_data [1] 	)
+    ,   .cmos1_x_pos 			(cmos_x_pos[1] 	)
+    ,   .cmos1_y_pos 			(cmos_y_pos[1] 	)
+    
+	,	.cmos2_clk				(cmos_clk  [2]  )
+    ,   .cmos2_vsync 			(cmos_vsync[2] 	)
+    ,   .cmos2_href  			(cmos_href [2] 	)
+    ,   .cmos2_clken 			(cmos_clken[2] 	)
+    ,   .cmos2_data  			(cmos_data [2] 	)
+    ,   .cmos2_x_pos 			(cmos_x_pos[2] 	)
+    ,   .cmos2_y_pos 			(cmos_y_pos[2] 	)
 
 //----------------------------------------------------
 // Video port

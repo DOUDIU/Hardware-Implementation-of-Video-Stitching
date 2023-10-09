@@ -180,12 +180,28 @@ module axi_full_core#(
     ,   output wire  M_AXI_RREADY
 
 //----------------------------------------------------
-// forward FIFO read interface
-    ,   output  wire           	cmos_frd_rdy  	[0 : 2]
-    ,   input   wire           	cmos_frd_vld  	[0 : 2]
-    ,   input   wire [FDW-1:0] 	cmos_frd_din  	[0 : 2]
-    ,   input   wire           	cmos_frd_empty	[0 : 2]
-    ,   input   wire [FAW:0] 	cmos_frd_cnt	[0 : 2]
+// forward FIFO0 read interface
+    ,   output  wire           	cmos0_frd_rdy  	
+    ,   input   wire           	cmos0_frd_vld  	
+    ,   input   wire [FDW-1:0] 	cmos0_frd_din  	
+    ,   input   wire           	cmos0_frd_empty	
+    ,   input   wire [FAW:0] 	cmos0_frd_cnt	
+
+//----------------------------------------------------
+// forward FIFO1 read interface
+    ,   output  wire           	cmos1_frd_rdy  	
+    ,   input   wire           	cmos1_frd_vld  	
+    ,   input   wire [FDW-1:0] 	cmos1_frd_din  	
+    ,   input   wire           	cmos1_frd_empty	
+    ,   input   wire [FAW:0] 	cmos1_frd_cnt	
+
+//----------------------------------------------------
+// forward FIFO2 read interface
+    ,   output  wire           	cmos2_frd_rdy  	
+    ,   input   wire           	cmos2_frd_vld  	
+    ,   input   wire [FDW-1:0] 	cmos2_frd_din  	
+    ,   input   wire           	cmos2_frd_empty	
+    ,   input   wire [FAW:0] 	cmos2_frd_cnt	
 
 //----------------------------------------------------
 // backward FIFO write interface
@@ -197,8 +213,12 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // cmos burst handshake 
-	,	input   wire           	cmos_burst_valid	[0 : 2]      
-	,	output	reg				cmos_burst_ready	[0 : 2]
+	,	input   wire           	cmos0_burst_valid	
+	,	input   wire           	cmos1_burst_valid	
+	,	input   wire           	cmos2_burst_valid	
+	,	output	wire			cmos0_burst_ready
+	,	output	wire			cmos1_burst_ready
+	,	output	wire			cmos2_burst_ready	
 
 //----------------------------------------------------
 // video burst handshake 
@@ -207,12 +227,55 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // cmos interface 
-	,	input	wire			cmos_vsync [0 : 2]
+	,	input	wire			cmos0_vsync
+	,	input	wire			cmos1_vsync
+	,	input	wire			cmos2_vsync
 
 //----------------------------------------------------
 // video interface 
 	,	input	wire			video_vsync
 );
+
+
+	wire           	cmos_frd_rdy  	[0 : 2]	;
+	wire           	cmos_frd_vld  	[0 : 2]	;
+	wire [FDW-1:0] 	cmos_frd_din  	[0 : 2]	;
+	wire           	cmos_frd_empty	[0 : 2]	;
+	wire [FAW:0] 	cmos_frd_cnt	[0 : 2]	;
+
+	assign	cmos0_frd_rdy  		=	cmos_frd_rdy  	[0]	;
+	assign	cmos_frd_vld  	[0]	=	cmos0_frd_vld  		;
+	assign	cmos_frd_din  	[0]	=	cmos0_frd_din  		;
+	assign	cmos_frd_empty	[0]	=	cmos0_frd_empty		;
+	assign	cmos_frd_cnt	[0]	=	cmos0_frd_cnt		;
+
+	assign	cmos1_frd_rdy  		=	cmos_frd_rdy  	[1]	;
+	assign	cmos_frd_vld  	[1]	=	cmos1_frd_vld  		;
+	assign	cmos_frd_din  	[1]	=	cmos1_frd_din  		;
+	assign	cmos_frd_empty	[1]	=	cmos1_frd_empty		;
+	assign	cmos_frd_cnt	[1]	=	cmos1_frd_cnt		;
+
+	assign	cmos2_frd_rdy  		=	cmos_frd_rdy  	[2]	;
+	assign	cmos_frd_vld  	[2]	=	cmos2_frd_vld  		;
+	assign	cmos_frd_din  	[2]	=	cmos2_frd_din  		;
+	assign	cmos_frd_empty	[2]	=	cmos2_frd_empty		;
+	assign	cmos_frd_cnt	[2]	=	cmos2_frd_cnt		;
+
+	wire           	cmos_burst_valid	[0 : 2]	;
+	reg				cmos_burst_ready	[0 : 2]	;
+
+	assign	cmos_burst_valid[0]	= 	cmos0_burst_valid;
+	assign	cmos_burst_valid[1]	= 	cmos1_burst_valid;
+	assign	cmos_burst_valid[2]	= 	cmos2_burst_valid;
+	assign	cmos0_burst_ready	=	cmos_burst_ready[0];
+	assign	cmos1_burst_ready	=	cmos_burst_ready[1];
+	assign	cmos2_burst_ready	=	cmos_burst_ready[2];
+
+	wire			cmos_vsync [0 : 2];
+
+	assign	cmos_vsync[0]	=	cmos0_vsync;
+	assign	cmos_vsync[1]	=	cmos1_vsync;
+	assign	cmos_vsync[2]	=	cmos2_vsync;
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
 	// number of write or read transaction.

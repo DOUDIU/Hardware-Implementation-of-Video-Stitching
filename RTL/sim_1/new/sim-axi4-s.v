@@ -567,7 +567,7 @@
 	      begin:BYTE_BRAM_GEN
 	        wire [8-1:0] data_in ;
 	        wire [8-1:0] data_out;
-	        reg  [8-1:0] byte_ram [0 : 1655359];
+	        reg  [8-1:0] byte_ram [0 : 20000000];
 
 			integer  j;
 	     
