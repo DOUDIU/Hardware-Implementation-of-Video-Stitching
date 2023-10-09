@@ -464,7 +464,16 @@ module axi_full_core#(
 	always @(posedge M_AXI_ACLK || init_pulse == 1'b1) begin                                                                
 		if (M_AXI_ARESETN == 0) begin                                                            
 			axi_awaddr <= 1'b0;                                             
-		end                                                              
+		end
+		else if (cmos_burst_ready[0] & cmos_burst_valid[0]) begin
+			axi_awaddr	<=	axi_awaddr_cmos0 + (cmos_wr_buffer[0] ? BUFFER0_MAX : 0);
+		end
+		else if (cmos_burst_ready[1] & cmos_burst_valid[1]) begin
+			axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? BUFFER0_MAX : 0);
+		end
+		else if (cmos_burst_ready[2] & cmos_burst_valid[2]) begin
+			axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? BUFFER0_MAX : 0);
+		end
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
 			axi_awaddr <= axi_awaddr + burst_size_bytes;                   
 		end                                                              
@@ -918,21 +927,18 @@ module axi_full_core#(
 					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
 						3'b100,3'b101,3'b110,3'b111 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos0 + (cmos_wr_buffer[0] ? BUFFER0_MAX : 0);
 							write_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[0] <= 1'b1;
 							current_write_cam <= 3'b001;
 						end
 						3'b010,3'b011 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? BUFFER0_MAX : 0);
 							write_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[1] <= 1'b1;
 							current_write_cam <= 3'b010;
 						end
 						3'b001: begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? BUFFER0_MAX : 0);
 							write_burst_counter_max	<=	(Cmos2_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[2] <= 1'b1;
 							current_write_cam <= 3'b100;
