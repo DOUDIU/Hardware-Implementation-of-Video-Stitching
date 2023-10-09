@@ -298,6 +298,10 @@ axi_full_core #(
 	,	.cmos_vsync         (cmos_vsync             )
 
 //----------------------------------------------------
+// video interface 
+	,	.video_vsync        (video_vsync            )   
+
+//----------------------------------------------------
 // AXI-FULL master port
     ,   .INIT_AXI_TXN       (AXI_FULL_BURST     )
     ,   .TXN_DONE           (TXN_DONE           )

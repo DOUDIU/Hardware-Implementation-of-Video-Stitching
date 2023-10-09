@@ -155,7 +155,7 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\cobweb.bmp")
+		.PIC_PATH	("..\\pic\\poster.bmp")
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
 )u_sim_cmos2(

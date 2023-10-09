@@ -208,6 +208,10 @@ module axi_full_core#(
 //----------------------------------------------------
 // cmos interface 
 	,	input	wire			cmos_vsync [0 : 2]
+
+//----------------------------------------------------
+// video interface 
+	,	input	wire			video_vsync
 );
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
@@ -241,12 +245,15 @@ module axi_full_core#(
 
 	reg				cmos_vsync_d1[0:2];
 	reg				cmos_vsync_d2[0:2];
+
+	reg				video_vsync_d1;
+	reg				video_vsync_d2;
 	
 	reg				cmos_wr_buffer[0:2];
-	wire    [31:0]	cmos_wr_buffer0_max;
-	reg	 	[2:0]	write_current_frame = 0;
+	wire    [31:0]	BUFFER0_MAX;
+	reg	 	[2:0]	current_write_cam = 0;
 	
-	assign cmos_wr_buffer0_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4;
+	assign BUFFER0_MAX = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4;
 
 	generate for(i = 0; i < 3 ;i = i + 1) begin
 		always @(posedge M_AXI_ACLK) begin
@@ -261,6 +268,17 @@ module axi_full_core#(
 		end   
 	end
 	endgenerate
+
+	always @(posedge M_AXI_ACLK) begin
+		if (M_AXI_ARESETN == 0) begin
+			video_vsync_d1		<=	0;
+			video_vsync_d2		<=	0;                             
+		end                                                                               
+		else begin  
+			video_vsync_d1		<=	video_vsync;
+			video_vsync_d2		<=	video_vsync_d1;                                                                 
+		end                                                                      
+	end   
 
 	generate for(i = 0; i < 3 ;i = i + 1) begin
 		always @(posedge M_AXI_ACLK) begin
@@ -279,7 +297,7 @@ module axi_full_core#(
 
 	generate 
 		for(i = 0; i < 3; i = i + 1) begin
-			assign	cmos_frd_rdy[i] = frd_rdy & write_current_frame[i];
+			assign	cmos_frd_rdy[i] = frd_rdy & current_write_cam[i];
 		end
 	endgenerate
 
@@ -352,10 +370,7 @@ module axi_full_core#(
 	wire  	read_resp_error;
 	wire  	wnext;
 	wire  	rnext;
-	reg  	init_txn_ff;
-	reg  	init_txn_ff2;
 	reg  	init_txn_edge;
-	wire  	init_txn_pulse;
 
 
 	// I/O Connections assignments
@@ -408,25 +423,10 @@ module axi_full_core#(
 	assign TXN_DONE	= compare_done;
 	//Burst size in bytes
 	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH / 8;
-	assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
-
-
-	//Generate a pulse to initiate AXI transaction.
-	always @(posedge M_AXI_ACLK)										      
-	  begin                                                                        
-	    // Initiates AXI transaction delay    
-	    if (M_AXI_ARESETN == 0 )                                                   
-	      begin                                                                    
-	        init_txn_ff <= 1'b0;                                                   
-	        init_txn_ff2 <= 1'b0;                                                   
-	      end                                                                               
-	    else                                                                       
-	      begin  
-	        init_txn_ff <= INIT_AXI_TXN;
-	        init_txn_ff2 <= init_txn_ff;                                                                 
-	      end                                                                      
-	  end     
-
+	wire  	init_read_pulse;
+	assign 	init_read_pulse	= video_vsync_d2 && !video_vsync_d1;
+	wire 	init_pulse;
+	assign init_pulse = 0;
 
 	//--------------------
 	//Write Address Channel
@@ -442,7 +442,7 @@ module axi_full_core#(
 	// by burst_size_byte to point to the next address. 
 
 	always @(posedge M_AXI_ACLK) begin                                                                    
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                            
+	    if (M_AXI_ARESETN == 0 || init_pulse == 1'b1 ) begin                                                            
 			axi_awvalid <= 1'b0;                                           
 		end                                                              
 	    // If previously not valid , start next transaction                
@@ -461,7 +461,7 @@ module axi_full_core#(
 
 	                                                                       
 	// Next address after AWREADY indicates previous address acceptance    
-	always @(posedge M_AXI_ACLK) begin                                                                
+	always @(posedge M_AXI_ACLK || init_pulse == 1'b1) begin                                                                
 		if (M_AXI_ARESETN == 0) begin                                                            
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
@@ -502,7 +502,7 @@ module axi_full_core#(
 	                                                                                    
 	// WVALID logic, similar to the axi_awvalid always block above                      
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                                         
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1 ) begin                                                                         
 			axi_wvalid <= 1'b0;                                                         
 		end                                                                           
 		// If previously not valid, start next transaction                              
@@ -525,7 +525,7 @@ module axi_full_core#(
 	//WLAST generation on the MSB of a counter underflow                                
 	// WVALID logic, similar to the axi_awvalid always block above                      
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                                         
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1 ) begin                                                                         
 			axi_wlast <= 1'b0;                                                          
 		end                                                                           
 		// axi_wlast is asserted when the write index                                   
@@ -552,7 +552,7 @@ module axi_full_core#(
 	/* Burst length counter. Uses extra counter register bit to indicate terminal       
 	 count to reduce decode logic */                                                    
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 || start_single_burst_write == 1'b1) begin                                                                         
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1 || start_single_burst_write == 1'b1) begin                                                                         
 			write_index <= 0;                                                           
 		end                                                                           
 		else if (wnext && (write_index != C_M_AXI_BURST_LEN-1)) begin                                                                         
@@ -567,13 +567,13 @@ module axi_full_core#(
 	/* Write Data Generator                                                             
 	 Data pattern is only a simple incrementing count from 0 for each burst  */         
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                        
-			axi_wdata <= ~128'h0;                                  
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1) begin                                                        
+			axi_wdata <= 0;                                  
 		end                           
 		//else if (wnext && axi_wlast)                                                  
 		//  axi_wdata <= 'b0;      
 		else if (M_AXI_AWREADY && axi_awvalid) begin
-			case(write_current_frame)
+			case(current_write_cam)
 				3'b001: 	axi_wdata <= cmos_frd_din[0];
 				3'b010: 	axi_wdata <= cmos_frd_din[1];
 				3'b100: 	axi_wdata <= cmos_frd_din[2];
@@ -581,7 +581,7 @@ module axi_full_core#(
 			endcase
 		end                                                     
 		else if (wnext) begin         
-			case(write_current_frame)
+			case(current_write_cam)
 				3'b001: 	axi_wdata <= cmos_frd_din[0];
 				3'b010: 	axi_wdata <= cmos_frd_din[1];
 				3'b100: 	axi_wdata <= cmos_frd_din[2];
@@ -615,7 +615,7 @@ module axi_full_core#(
 	//into the ERROR output. 
 
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                             
+	    if (M_AXI_ARESETN == 0 || init_pulse == 1'b1 ) begin                                                             
 			axi_bready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge bresp with axi_bready by the master           
@@ -649,7 +649,7 @@ module axi_full_core#(
 	//manner as the write address channel.
 
 	always @(posedge M_AXI_ACLK) begin
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                          
+		if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1 ) begin                                                          
 			axi_arvalid <= 1'b0;                                         
 		end                                                            
 		// If previously not valid, start next transaction              
@@ -667,7 +667,7 @@ module axi_full_core#(
 
 	// Next address after ARREADY indicates previous address acceptance  
 	always @(posedge M_AXI_ACLK) begin                                                              
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
+	    if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1) begin                                                          
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
@@ -690,7 +690,7 @@ module axi_full_core#(
 	// Burst length counter. Uses extra counter register bit to indicate    
 	// terminal count to reduce decode logic                                
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 || start_single_burst_read) begin                                                             
+	    if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1 || start_single_burst_read) begin                                                             
 			read_index <= 0;                                                
 		end                                                               
 	    else if (rnext && (read_index != C_M_AXI_BURST_LEN-1)) begin                                                             
@@ -702,7 +702,7 @@ module axi_full_core#(
 	end
                                 
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
+	    if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1) begin
 	        video_bwr_vld	<=	0;
 			video_bwr_din	<=	0;   	                                  
 		end
@@ -724,7 +724,7 @@ module axi_full_core#(
 	 more data, so no need to throttle the RREADY signal                    
 	 */                                                                     
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                             
+	    if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1 ) begin                                                             
 			axi_rready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge rdata/rresp with axi_rready by the master     
@@ -742,7 +742,7 @@ module axi_full_core#(
 	                                                                        
 	//Check received read data against data generator                       
 	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
+	    if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1) begin
 	        read_mismatch <= 1'b0;                                          
 		end
 	    //Only check data when RVALID is active                             
@@ -765,7 +765,7 @@ module axi_full_core#(
 	//Generate expected read data to check against actual read data
 
 	always @(posedge M_AXI_ACLK) begin                                                  
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin// || M_AXI_RLAST)             
+		if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1) begin// || M_AXI_RLAST)             
 			expected_rdata <= 'b1;                            
 		end
 		else if (M_AXI_RVALID && axi_rready) begin 
@@ -784,7 +784,7 @@ module axi_full_core#(
 	//Register and hold any data mismatches, or read/write interface errors 
 
 	always @(posedge M_AXI_ACLK) begin                                                              
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
+		if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1) begin                                                          
 			error_reg <= 1'b0;                                           
 		end                                                            
 		else if (read_mismatch || write_resp_error || read_resp_error) begin                                                          
@@ -823,7 +823,7 @@ module axi_full_core#(
 	// write_burst_counter counter keeps track with the number of burst transaction initiated            
 	// against the number of burst transactions the master needs to initiate                                   
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                                                                 
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1 ) begin                                                                                                 
 			write_burst_counter <= 'b0;                                                                         
 		end                                                                                                   
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                                                                 
@@ -839,7 +839,7 @@ module axi_full_core#(
 	// read_burst_counter counter keeps track with the number of burst transaction initiated                   
 	// against the number of burst transactions the master needs to initiate                                   
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                                                                 
+		if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1) begin                                                                                                 
 			read_burst_counter <= 'b0;                                                                          
 		end                                                                                                   
 		else if (M_AXI_ARREADY && axi_arvalid) begin                                                                                                 
@@ -852,19 +852,43 @@ module axi_full_core#(
 		end                                                        
 	end
 
-	//implement master command interface state machine                                                        
+	always @ ( posedge M_AXI_ACLK) begin
+		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[0] & !cmos_vsync_d1[0])) begin
+			axi_awaddr_cmos0	<=	0;
+		end
+		else if(cmos_burst_valid[0] & cmos_burst_ready[0]) begin
+			axi_awaddr_cmos0 	<=	(axi_awaddr_cmos0 >= axi_awaddr_cmos0_max) ? 0 : (axi_awaddr_cmos0 + Cmos0_H * 4);
+		end
+	end
+	
+	always @ ( posedge M_AXI_ACLK) begin
+		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[1] & !cmos_vsync_d1[1])) begin
+			axi_awaddr_cmos1	<=	Cmos0_H * Cmos0_V * 4;
+		end
+		else if(cmos_burst_valid[1] & cmos_burst_ready[1]) begin
+			axi_awaddr_cmos1 	<=	(axi_awaddr_cmos1 >= axi_awaddr_cmos1_max) ? (Cmos0_H * Cmos0_V * 4) : (axi_awaddr_cmos1 + Cmos1_H * 4);
+		end
+	end
+	
+	always @ ( posedge M_AXI_ACLK) begin
+		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[2] & !cmos_vsync_d1[2])) begin
+			axi_awaddr_cmos2	<=	Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
+		end
+		else if(cmos_burst_valid[2] & cmos_burst_ready[2]) begin
+			axi_awaddr_cmos2 	<=	(axi_awaddr_cmos2 >= axi_awaddr_cmos2_max) ? (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4) : (axi_awaddr_cmos2 + Cmos2_H * 4);
+		end
+	end
+
+	//implement master command interface state machine
 
 	always @ ( posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
+		if (M_AXI_ARESETN == 1'b0) begin                                                                                                 
 			// reset condition                                                                                  
 			// All the signals are assigned default values under reset condition                                
 			mst_exec_state      <= IDLE;                                                                
 			start_single_burst_write <= 1'b0;                                                                   
 			start_single_burst_read  <= 1'b0;
-			axi_awaddr_cmos0	<=	0;
-			axi_awaddr_cmos1	<=	Cmos0_H * Cmos0_V * 4;
-			axi_awaddr_cmos2	<=	Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
-			write_current_frame	<=	0;
+			current_write_cam	<=	0;
 			for(integer j = 0; j < 3; j = j + 1)begin
 				cmos_burst_ready[j]	<=	0;
 			end
@@ -887,34 +911,31 @@ module axi_full_core#(
 					mst_exec_state  <= INIT_READ_REGION_A;
 					read_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 					video_burst_ready <= 1;
-					axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : cmos_wr_buffer0_max);
+					axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : BUFFER0_MAX);
 					axi_araddr_video0 <= axi_araddr_video0 >= axi_awaddr_cmos0_max ? 0 : axi_araddr_video0 + Cmos0_H * 4;
 				end
 				else if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2]) begin
 					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
 						3'b100,3'b101,3'b110,3'b111 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos0 + (cmos_wr_buffer[0] ? cmos_wr_buffer0_max : 0);
-							axi_awaddr_cmos0 <=	axi_awaddr_cmos0 >= axi_awaddr_cmos0_max ? 0 : axi_awaddr_cmos0 + Cmos0_H * 4;
+							axi_awaddr	<=	axi_awaddr_cmos0 + (cmos_wr_buffer[0] ? BUFFER0_MAX : 0);
 							write_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[0] <= 1'b1;
-							write_current_frame <= 3'b001;
+							current_write_cam <= 3'b001;
 						end
 						3'b010,3'b011 : begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? cmos_wr_buffer0_max : 0);
-							axi_awaddr_cmos1 <=	axi_awaddr_cmos1 >= axi_awaddr_cmos1_max ? (Cmos0_H * Cmos0_V * 4) : (axi_awaddr_cmos1 + Cmos1_H * 4);
+							axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? BUFFER0_MAX : 0);
 							write_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[1] <= 1'b1;
-							write_current_frame <= 3'b010;
+							current_write_cam <= 3'b010;
 						end
 						3'b001: begin
 							mst_exec_state  <= INIT_WRITE;
-							axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? cmos_wr_buffer0_max : 0);
-							axi_awaddr_cmos2 <=	axi_awaddr_cmos2 >= axi_awaddr_cmos2_max? (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4) : (axi_awaddr_cmos2 + Cmos2_H * 4);
+							axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? BUFFER0_MAX : 0);
 							write_burst_counter_max	<=	(Cmos2_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 							cmos_burst_ready[2] <= 1'b1;
-							write_current_frame <= 3'b100;
+							current_write_cam <= 3'b100;
 						end
 						default: begin
 							mst_exec_state  <= IDLE;
@@ -951,7 +972,7 @@ module axi_full_core#(
 					if (reads_done) begin
 						mst_exec_state <= INIT_READ_REGION_B;
 						read_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-						axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  axi_awaddr_cmos1_max ? (cmos_wr_buffer[2] ? 0 : cmos_wr_buffer0_max) : (cmos_wr_buffer[1] ? 0 : cmos_wr_buffer0_max));
+						axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  axi_awaddr_cmos1_max ? (cmos_wr_buffer[2] ? 0 : BUFFER0_MAX) : (cmos_wr_buffer[1] ? 0 : BUFFER0_MAX));
 						axi_araddr_video1 <= axi_araddr_video1 >= axi_awaddr_cmos2_max ? (Cmos0_H * Cmos0_V * 4) : (axi_araddr_video1 + Cmos1_H * 4);
 					end                                                                                           
 					else begin                                                                                         
@@ -989,7 +1010,7 @@ module axi_full_core#(
 	// is initiated by the assertion of start_single_burst_write. burst_write_active                          
 	// signal remains asserted until the burst write is accepted by the slave                                 
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1)                                                                                 
 			burst_write_active <= 1'b0;                                                                           
 																												
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
@@ -1006,7 +1027,7 @@ module axi_full_core#(
 	 // committed.                                                                                              
 	                                                                                                            
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
+		if (M_AXI_ARESETN == 0 || init_pulse == 1'b1)                                                                                 
 			writes_done <= 1'b0;                                                                                  
 																												
 		//The writes_done should be associated with a bready response                                           
@@ -1021,7 +1042,7 @@ module axi_full_core#(
 	// is initiated by the assertion of start_single_burst_write. start_single_burst_read                     
 	// signal remains asserted until the burst read is accepted by the master                                 
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
+		if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1)                                                                                 
 			burst_read_active <= 1'b0;                                                                            
 																												
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
@@ -1039,7 +1060,7 @@ module axi_full_core#(
 	// committed.                                                                                              
 																											
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
+		if (M_AXI_ARESETN == 0 || init_read_pulse == 1'b1)                                                                                 
 			reads_done <= 1'b0;                                                                                   
 																												
 		//The reads_done should be associated with a rready response                                            
