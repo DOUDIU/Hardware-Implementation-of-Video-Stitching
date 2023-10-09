@@ -35,6 +35,8 @@ module fifo_to_video_ctrl#(
 reg axi_full_burst_valid = 0;
 
 wire  [11:0]  pixel_ypos;
+reg   [11:0]  pixel_ypos_d1;
+reg   [11:0]  pixel_ypos_d2;
 
 reg     [1:0]   shift_cnt = 0;
 wire            data_req;
@@ -46,7 +48,18 @@ reg             video_de_out_d2 = 0;
 reg             video_de_out_d1 = 0;
 
 assign AXI_FULL_BURST_VALID = axi_full_burst_valid;
-assign fifo_rst_n = !(pixel_ypos == V_DISP + 2); 
+assign fifo_rst_n = !(pixel_ypos_d2 == V_DISP + 2); 
+
+always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
+    if(!M_AXI_ARESETN)begin
+        pixel_ypos_d1 <= 1'b0;
+        pixel_ypos_d2 <= 1'b0;
+    end
+    else begin
+        pixel_ypos_d1 <= pixel_ypos;
+        pixel_ypos_d2 <= pixel_ypos_d1;
+    end 
+end
 
 always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
@@ -74,7 +87,7 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
     if(!M_AXI_ARESETN)begin
         axi_full_burst_valid <= 1'b0;
     end
-    else if((!video_vs_out_d2 & video_vs_out_d1) | (!video_de_out_d2 & video_de_out_d1 & !(pixel_ypos == V_DISP))) begin
+    else if((!video_vs_out_d2 & video_vs_out_d1) | (!video_de_out_d2 & video_de_out_d1 & !(pixel_ypos_d2 == V_DISP))) begin
         axi_full_burst_valid <= 1'b1;
     end
     else if(axi_full_burst_valid & AXI_FULL_BURST_READY)begin

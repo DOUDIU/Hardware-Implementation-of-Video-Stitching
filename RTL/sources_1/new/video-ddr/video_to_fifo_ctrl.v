@@ -46,6 +46,8 @@ reg [AXI4_DATA_WIDTH-1:0] fifo_data_out_buffer;
 reg [1:0]   buf_cnt;
 reg     video_hs_out_d1;
 reg     video_hs_out_d2;
+reg     video_de_out_d1;
+reg     video_de_out_d2;
 reg     de_valid_flag = 0;
 
 assign  fifo_data_out   =   fifo_data_out_buffer;
@@ -84,10 +86,14 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
     if(!M_AXI_ARESETN) begin
         video_hs_out_d1 <=  0;
         video_hs_out_d2 <=  0;
+        video_de_out_d1 <=  0;
+        video_de_out_d2 <=  0;
     end 
     else begin
         video_hs_out_d1 <=  video_hs_out;
         video_hs_out_d2 <=  video_hs_out_d1;
+        video_de_out_d1 <=  video_de_out;
+        video_de_out_d2 <=  video_de_out_d1;
     end
 end
 
@@ -95,7 +101,7 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
     if(!M_AXI_ARESETN) begin
         de_valid_flag <=  0;
     end 
-    else if(video_de_out)begin
+    else if(video_de_out_d2)begin
         de_valid_flag <=  1;
     end
     else if(video_hs_out_d2 & !video_hs_out_d1) begin

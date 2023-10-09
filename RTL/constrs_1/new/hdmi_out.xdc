@@ -1,4 +1,4 @@
-set_property PACKAGE_PIN F11  [get_ports vout_clk]
+set_property PACKAGE_PIN F11 [get_ports vout_clk]
 set_property PACKAGE_PIN C14 [get_ports {vout_data[0]}]
 set_property PACKAGE_PIN C13 [get_ports {vout_data[1]}]
 set_property PACKAGE_PIN B14 [get_ports {vout_data[2]}]
@@ -52,3 +52,5 @@ set_property SLEW FAST [get_ports vout_clk]
 set_property SLEW FAST [get_ports vout_de]
 set_property SLEW FAST [get_ports vout_hs]
 set_property SLEW FAST [get_ports vout_vs]
+
+

@@ -429,22 +429,23 @@ axi_full_core #(
         .rd_rst_busy  ()  // output wire rd_rst_busy
     );
 
-    // ila_0 ila_back_fifo (
-    //     .clk    (M_AXI_ACLK    ), // input wire clk
+    ila_0 ila_back_fifo (
+            .clk    (M_AXI_ACLK    ) // input wire clk
 
-    //     .probe1 (video_fifo_wr_data_out     ), // input wire [127:0]  probe1 
-    //     .probe0 (video_fifo_wr_enable       ), // input wire [0:0]  probe0  
-    //     .probe3 (video_fifo_rd_enable       ), // input wire [127:0]  probe3
-    //     .probe2 (video_fifo_rd_data_out     ), // input wire [0:0]  probe2  
-    //     .probe4 (backward_fifo_full         ), // input wire [0:0]  probe4 
-    //     .probe5 (backward_fifo_empty        ), // input wire [0:0]  probe5 
-    //     .probe6 (video_vsync                ), // input wire [0:0]  probe6 
-    //     .probe7 (video_href                 ), // input wire [0:0]  probe7 
-    //     .probe8 (video_de                   ), // input wire [0:0]  probe8 
-    //     .probe9 (video_data                 ), // input wire [23:0]  probe9
-	//     .probe10(rd_data_count              ), // input wire [11:0]  probe10 
-	//     .probe11(wr_data_count              )  // input wire [11:0]  probe11
-    // );
+        ,   .probe1 (video_fifo_wr_data_out     ) // input wire [127:0]  probe1 
+        ,   .probe0 (video_fifo_wr_enable       ) // input wire [0:0]  probe0  
+        ,   .probe3 (video_fifo_rd_data_out     ) // input wire [127:0]  probe3
+        ,   .probe2 (video_fifo_rd_enable       ) // input wire [0:0]  probe2  
+        ,   .probe4 (backward_fifo_full         ) // input wire [0:0]  probe4 
+        ,   .probe5 (backward_fifo_empty        ) // input wire [0:0]  probe5 
+        ,   .probe6 (video_vsync                ) // input wire [0:0]  probe6 
+        ,   .probe7 (video_href                 ) // input wire [0:0]  probe7 
+        ,   .probe8 (video_de                   ) // input wire [0:0]  probe8 
+        ,   .probe9 (video_data                 ) // input wire [23:0]  probe9
+	    ,   .probe10(rd_data_count              ) // input wire [11:0]  probe10 
+	    ,   .probe11(wr_data_count              )  // input wire [11:0]  probe11
+        ,   .probe12(video_clk                  )
+    );
     end
 `endif
 
