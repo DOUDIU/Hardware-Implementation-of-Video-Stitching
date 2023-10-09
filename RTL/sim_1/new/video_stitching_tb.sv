@@ -107,9 +107,9 @@ wire        video_hsync ;
 wire        video_de    ;
 wire [23:0] video_data  ;
 
-parameter cmos0_period = 14;
-parameter cmos1_period = 20;
-parameter cmos2_period = 24;
+parameter cmos0_period = 10;
+parameter cmos1_period = 10;
+parameter cmos2_period = 10;
 
 always#(cmos0_period/2) cmos_clk[0] = ~cmos_clk[0];
 initial #(20*cmos0_period) cmos_rst_n[0] = 1;
@@ -125,9 +125,8 @@ reg         video_clk   = 0;
 always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		.PIC_PATH	("..\\pic\\afternoon.bmp")
-	,	.IMG_HDISP 	(1920)
+		.PIC_PATH	("..\\pic\\tree.bmp")
+	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(1080)
 )u_sim_cmos0(
         .clk            (cmos_clk[0]	)
@@ -141,7 +140,6 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/poster.bmp")
 		.PIC_PATH	("..\\pic\\poster.bmp")
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
@@ -157,7 +155,6 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/poster.bmp")
 		.PIC_PATH	("..\\pic\\cobweb.bmp")
 	,	.IMG_HDISP 	(960)
 	,	.IMG_VDISP 	(540)
@@ -172,25 +169,10 @@ sim_cmos #(
 	,   .Y_POS          (cmos_y_pos[2]	)
 );
 
-// video_topic #(
-//         .PIC_PATH       ("..\\pic\\outcom2.bmp")
-//     ,   .START_FRAME    (2                    )
-// 	,	.IMG_HDISP      (960)//(2880                 )
-// 	,	.IMG_VDISP      (540)//(1080                 )
-//     ,   .DATA_WIDTH     (24                   )
-// )u_video_topic_test(
-//         .clk            (cmos_clk[1]	)//(video_clk      )
-//     ,   .rst_n          (1)
-//     ,   .video_vsync    (cmos_vsync[1]	)//(video_vsync    )
-//     ,   .video_hsync    (cmos_href[1]	)//(video_hsync    )
-//     ,   .video_de       (cmos_clken[1]	)//(video_de       )
-//     ,   .video_data     (cmos_data[1]	)//(video_data     )
-// );
-
 video_to_pic #(
         .PIC_PATH       ("..\\pic\\outcom.bmp")
     ,   .START_FRAME    (5                    )
-	,	.IMG_HDISP      (2880                 )
+	,	.IMG_HDISP      (1920                 )
 	,	.IMG_VDISP      (1080                 )
     ,   .DATA_WIDTH     (24                   )
 )u_video_to_pic(

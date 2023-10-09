@@ -1,5 +1,5 @@
 module video_stiching_top#(
-        parameter Cmos0_H   =   1920
+        parameter Cmos0_H   =   960
     ,   parameter Cmos0_V   =   1080
 
     ,   parameter Cmos1_H   =   960
@@ -12,12 +12,6 @@ module video_stiching_top#(
     ,   parameter FIFO_AW = 11
 		// AXI4 sink: Data Width as same as the data depth of the fifo
     ,   parameter AXI4_DATA_WIDTH = 128
-        // Horizontal resolution
-    ,   parameter pixels_horizontal = 1920
-        // Vertical resolution
-    ,   parameter pixels_vertical = 1080
-        // Delay number of the frame, the max value is 1024(constrained by the bits of the counter)
-    ,   parameter frame_delay = 1
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
@@ -258,9 +252,6 @@ axi_full_core #(
     // FIFO parameters
         .FDW                            (AXI4_DATA_WIDTH    )
     ,   .FAW                            (FIFO_AW            )
-    ,   .FRAME_DELAY                    (1                  )
-    ,   .PIXELS_HORIZONTAL              (1920               )
-    ,   .PIXELS_VERTICAL                (1080               )
 
     //----------------------------------------------------
     // AXI-FULL parameters
