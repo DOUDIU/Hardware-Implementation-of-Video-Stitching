@@ -284,6 +284,7 @@ module axi_full_core#(
 	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
 
 	genvar i;
+	integer j;
 
 	parameter Cmos0_H = 960;
 	parameter Cmos0_V = 1080;
@@ -961,7 +962,7 @@ module axi_full_core#(
 			start_single_burst_write <= 1'b0;                                                                   
 			start_single_burst_read  <= 1'b0;
 			current_write_cam	<=	0;
-			for(integer j = 0; j < 3; j = j + 1)begin
+			for(j = 0; j < 3; j = j + 1)begin
 				cmos_burst_ready[j]	<=	0;
 			end
 			write_burst_counter_max	<=	0;
@@ -1026,7 +1027,7 @@ module axi_full_core#(
 				else begin                                                                                         
 					mst_exec_state  <= INIT_WRITE;                                                              
 	
-					for(integer j = 0; j < 3; j = j + 1)begin
+					for(j = 0; j < 3; j = j + 1)begin
 						cmos_burst_ready[j]	<=	0;
 					end
 					
