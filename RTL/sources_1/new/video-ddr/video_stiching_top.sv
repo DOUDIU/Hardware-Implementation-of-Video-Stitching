@@ -200,8 +200,8 @@ wire                                video_burst_ready       ;
 wire                                video_fifo_wr_enable    ;
 wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_wr_data_out  ;
 wire                                video_fifo_rd_enable    ;
-wire                                video_fifo_rd_empty     ;
 wire    [AXI4_DATA_WIDTH-1 : 0]     video_fifo_rd_data_out  ;
+wire                                video_fifo_rst_n        ;
 
 
 generate 
@@ -234,14 +234,14 @@ generate
             ,   .FALLTHROUGH            ("TRUE"                     )  
         )u_async_forward_fifo(    
                 .wclk                   (cmos_clk[i]                )
-            ,   .wrst_n                 (rst_n                      )
+            ,   .wrst_n                 (cmos_vsync[i]              )
             ,   .winc                   (cmos_fifo_wr_enable[i]     )
             ,   .wdata                  (cmos_fifo_wr_data_out[i]   )
             ,   .wfull                  ()
             ,   .awfull                 ()
 
             ,   .rclk                   (M_AXI_ACLK                 )
-            ,   .rrst_n                 (M_AXI_ARESETN              )
+            ,   .rrst_n                 (cmos_vsync[i]              )
             ,   .rinc                   (cmos_fifo_rd_enable[i]     )
             ,   .rdata                  (cmos_fifo_rd_data_out[i]   )
             ,   .rempty                 ()
@@ -373,17 +373,17 @@ async_fifo#(
     ,   .FALLTHROUGH            ("TRUE"                     )  
 )u_async_backward_fifo(    
         .wclk                   (M_AXI_ACLK                 )
-    ,   .wrst_n                 (M_AXI_ARESETN              )
+    ,   .wrst_n                 (video_fifo_rst_n           )
     ,   .winc                   (video_fifo_wr_enable       )
     ,   .wdata                  (video_fifo_wr_data_out     )
     ,   .wfull                  ()
     ,   .awfull                 ()
 
     ,   .rclk                   (video_clk                  )
-    ,   .rrst_n                 (rst_n                      ) 
+    ,   .rrst_n                 (video_fifo_rst_n           )
     ,   .rdata                  (video_fifo_rd_data_out     )
-    ,   .rinc                   (video_fifo_rd_enable & !video_fifo_rd_empty)
-    ,   .rempty                 (video_fifo_rd_empty        )
+    ,   .rinc                   (video_fifo_rd_enable       )
+    ,   .rempty                 ()
     ,   .arempty                ()
 );
 
@@ -401,7 +401,8 @@ fifo_to_video_ctrl u_fifo_to_video_ctrl(
 	,   .video_data_out         (video_data                 )                                  
 
     ,   .fifo_data_in           (video_fifo_rd_data_out     )                              
-    ,   .fifo_enable            (video_fifo_rd_enable       )                              
+    ,   .fifo_enable            (video_fifo_rd_enable       )       
+    ,   .fifo_rst_n             (video_fifo_rst_n           )                       
 
     ,   .AXI_FULL_BURST_VALID   (video_burst_valid          )                                      
     ,   .AXI_FULL_BURST_READY   (video_burst_ready          )                                      
