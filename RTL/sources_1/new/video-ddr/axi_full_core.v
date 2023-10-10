@@ -747,7 +747,7 @@ module axi_full_core#(
 			axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : BUFFER0_MAX);
 		end
 		else if((mst_exec_state  == INIT_READ_REGION_A) & reads_done) begin
-			axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  axi_awaddr_cmos1_max ? (cmos_wr_buffer[2] ? 0 : BUFFER0_MAX) : (cmos_wr_buffer[1] ? 0 : BUFFER0_MAX));
+			axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4) ? (cmos_wr_buffer[2] ? 0 : BUFFER0_MAX) : (cmos_wr_buffer[1] ? 0 : BUFFER0_MAX));
 		end
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
 	    	axi_araddr 	<= 	axi_araddr + burst_size_bytes;
@@ -958,6 +958,16 @@ module axi_full_core#(
 		end
 	end
 
+	always @ ( posedge M_AXI_ACLK) begin
+		if ((M_AXI_ARESETN == 1'b0) || init_read_pulse == 1'b1) begin
+			axi_araddr_video0	<=	0;
+			axi_araddr_video1	<=	Cmos0_H * Cmos0_V * 4;
+		end
+		else if((mst_exec_state  == INIT_READ_REGION_B) & reads_done) begin
+			axi_araddr_video0 <= (axi_araddr_video0 >= axi_awaddr_cmos0_max) ? 0 : axi_araddr_video0 + Cmos0_H * 4;
+			axi_araddr_video1 <= (axi_araddr_video1 >= axi_awaddr_cmos2_max) ? (Cmos0_H * Cmos0_V * 4) : (axi_araddr_video1 + Cmos1_H * 4);
+		end
+	end 
 	//implement master command interface state machine
 
 	always @ ( posedge M_AXI_ACLK) begin                                                                                                     
@@ -974,8 +984,6 @@ module axi_full_core#(
 			write_burst_counter_max	<=	0;
 
 			video_burst_ready <= 0;
-			axi_araddr_video0	<=	0;
-			axi_araddr_video1	<=	Cmos0_H * Cmos0_V * 4;
 			read_burst_counter_max	<=	0;
 		end
 		else begin                                                                                                 
@@ -990,8 +998,6 @@ module axi_full_core#(
 					mst_exec_state  <= INIT_READ_REGION_A;
 					read_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 					video_burst_ready <= 1;
-					// axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : BUFFER0_MAX);
-					// axi_araddr_video0 <= axi_araddr_video0 >= axi_awaddr_cmos0_max ? 0 : axi_araddr_video0 + Cmos0_H * 4;
 				end
 				else if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2]) begin
 					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
@@ -1048,8 +1054,6 @@ module axi_full_core#(
 					if (reads_done) begin
 						mst_exec_state <= INIT_READ_REGION_B;
 						read_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-						// axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  axi_awaddr_cmos1_max ? (cmos_wr_buffer[2] ? 0 : BUFFER0_MAX) : (cmos_wr_buffer[1] ? 0 : BUFFER0_MAX));
-						// axi_araddr_video1 <= axi_araddr_video1 >= axi_awaddr_cmos2_max ? (Cmos0_H * Cmos0_V * 4) : (axi_araddr_video1 + Cmos1_H * 4);
 					end                                                                                           
 					else begin                                                                                         
 						mst_exec_state  <= INIT_READ_REGION_A;
@@ -1064,8 +1068,6 @@ module axi_full_core#(
 				INIT_READ_REGION_B : begin
 					if (reads_done) begin
 						mst_exec_state <= IDLE;
-						axi_araddr_video0 <= axi_araddr_video0 >= axi_awaddr_cmos0_max ? 0 : axi_araddr_video0 + Cmos0_H * 4;
-						axi_araddr_video1 <= axi_araddr_video1 >= axi_awaddr_cmos2_max ? (Cmos0_H * Cmos0_V * 4) : (axi_araddr_video1 + Cmos1_H * 4);
 					end                                                                                           
 					else begin                                                                                         
 						mst_exec_state  <= INIT_READ_REGION_B;
