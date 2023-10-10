@@ -45,9 +45,7 @@ module video_stiching_top#(
     ,   input           cmos0_vsync      
     ,   input           cmos0_href       
     ,   input           cmos0_clken      
-    ,   input   [23:0]  cmos0_data       
-    ,   input   [10:0]  cmos0_x_pos      
-    ,   input   [10:0]  cmos0_y_pos      
+    ,   input   [23:0]  cmos0_data     
 
 //----------------------------------------------------
 // Cmos port1
@@ -55,9 +53,7 @@ module video_stiching_top#(
     ,   input           cmos1_vsync     
     ,   input           cmos1_href      
     ,   input           cmos1_clken     
-    ,   input   [23:0]  cmos1_data      
-    ,   input   [10:0]  cmos1_x_pos     
-    ,   input   [10:0]  cmos1_y_pos     
+    ,   input   [23:0]  cmos1_data   
 
 //----------------------------------------------------
 // Cmos port2
@@ -65,9 +61,7 @@ module video_stiching_top#(
     ,   input           cmos2_vsync     
     ,   input           cmos2_href      
     ,   input           cmos2_clken     
-    ,   input   [23:0]  cmos2_data      
-    ,   input   [10:0]  cmos2_x_pos     
-    ,   input   [10:0]  cmos2_y_pos     
+    ,   input   [23:0]  cmos2_data        
 
 //----------------------------------------------------
 // Video port
@@ -207,32 +201,24 @@ wire           cmos_vsync      [0 : 2]  ;
 wire           cmos_href       [0 : 2]  ;
 wire           cmos_clken      [0 : 2]  ;
 wire   [23:0]  cmos_data       [0 : 2]  ;
-wire   [10:0]  cmos_x_pos      [0 : 2]  ;
-wire   [10:0]  cmos_y_pos      [0 : 2]  ;
 
 assign      cmos_clk   [0]  =   cmos0_clk       ;
 assign      cmos_vsync [0]  =   cmos0_vsync     ;
 assign      cmos_href  [0]  =   cmos0_href      ;
 assign      cmos_clken [0]  =   cmos0_clken     ;
 assign      cmos_data  [0]  =   cmos0_data      ;
-assign      cmos_x_pos [0]  =   cmos0_x_pos     ;
-assign      cmos_y_pos [0]  =   cmos0_y_pos     ;
 
 assign      cmos_clk   [1]  =   cmos1_clk       ;
 assign      cmos_vsync [1]  =   cmos1_vsync     ;
 assign      cmos_href  [1]  =   cmos1_href      ;
 assign      cmos_clken [1]  =   cmos1_clken     ;
 assign      cmos_data  [1]  =   cmos1_data      ;
-assign      cmos_x_pos [1]  =   cmos1_x_pos     ;
-assign      cmos_y_pos [1]  =   cmos1_y_pos     ;
 
 assign      cmos_clk   [2]  =   cmos2_clk       ;
 assign      cmos_vsync [2]  =   cmos2_vsync     ;
 assign      cmos_href  [2]  =   cmos2_href      ;
 assign      cmos_clken [2]  =   cmos2_clken     ;
 assign      cmos_data  [2]  =   cmos2_data      ;
-assign      cmos_x_pos [2]  =   cmos2_x_pos     ;
-assign      cmos_y_pos [2]  =   cmos2_y_pos     ;
 
 
 wire                                cmos_burst_valid        [0 : 2];
