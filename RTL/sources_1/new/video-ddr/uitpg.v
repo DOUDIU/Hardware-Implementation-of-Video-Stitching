@@ -178,7 +178,7 @@ always @(posedge tpg_clk_i)begin
 end
 
 assign tpg_data_o = {r_reg,g_reg,b_reg};//测试图形RGB数据输出
-assign tpg_vs_o = tpg_vs_i;  //VS同步信号
+assign tpg_vs_o = !tpg_vs_i;  //VS同步信号
 assign tpg_hs_o = tpg_hs_i;  //HS同步信号
 assign tpg_de_o = tpg_de_i;  //DE数据有效信号
 

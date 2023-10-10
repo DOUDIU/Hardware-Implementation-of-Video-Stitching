@@ -39,15 +39,8 @@
 `timescale 1ns / 1ns //仿真时间刻度/精度
 
 module uivtc#(
-    parameter H_ActiveSize  =   1920,               //视频时间参数,行视频信号，一行有效(需要显示的部分)像素所占的时钟数，一个时钟对应一个有效像素
-    parameter H_FrameSize   =   1920+88+44+148,     //视频时间参数,行视频信号，一行视频信号总计占用的时钟数
-    parameter H_SyncStart   =   1920+88,            //视频时间参数,行同步开始，即多少时钟数后开始产生行同步信号 
-    parameter H_SyncEnd     =   1920+88+44,         //视频时间参数,行同步结束，即多少时钟数后停止产生行同步信号，之后就是行有效数据部分
-
-    parameter V_ActiveSize  =   1080,               //视频时间参数,场视频信号，一帧图像所占用的有效(需要显示的部分)行数量，通常说的视频分辨率即H_ActiveSize*V_ActiveSize
-    parameter V_FrameSize   =   1080+4+5+36,        //视频时间参数,场视频信号，一帧视频信号总计占用的行数量
-    parameter V_SyncStart   =   1080+4,             //视频时间参数,场同步开始，即多少行数后开始产生场同步信号 
-    parameter V_SyncEnd     =   1080+4+5            //视频时间参数,场同步结束，即多少场数后停止产生场同步信号，之后就是场有效数据部分
+    parameter H_Resolution  =   1920,
+    parameter V_Resolution  =   1080
 )(
     input           vtc_rstn_i,//系统复位
     input			vtc_clk_i, //系统时钟
@@ -55,6 +48,16 @@ module uivtc#(
     output  reg     vtc_hs_o,  //行同步输出
     output  reg     vtc_de_o   //视频数据有效	 
 );
+
+localparam H_ActiveSize  =   H_Resolution            ;   //视频时间参数,行视频信号，一行有效(需要显示的部分)像素所占的时钟数，一个时钟对应一个有效像素
+localparam H_FrameSize   =   H_Resolution+88+44+148  ;   //视频时间参数,行视频信号，一行视频信号总计占用的时钟数
+localparam H_SyncStart   =   H_Resolution+88         ;   //视频时间参数,行同步开始，即多少时钟数后开始产生行同步信号 
+localparam H_SyncEnd     =   H_Resolution+88+44      ;   //视频时间参数,行同步结束，即多少时钟数后停止产生行同步信号，之后就是行有效数据部分
+
+localparam V_ActiveSize  =   V_Resolution            ;   //视频时间参数,场视频信号，一帧图像所占用的有效(需要显示的部分)行数量，通常说的视频分辨率即H_ActiveSize*V_ActiveSize
+localparam V_FrameSize   =   V_Resolution+4+5+36     ;   //视频时间参数,场视频信号，一帧视频信号总计占用的行数量
+localparam V_SyncStart   =   V_Resolution+4          ;   //视频时间参数,场同步开始，即多少行数后开始产生场同步信号 
+localparam V_SyncEnd     =   V_Resolution+4+5        ;   //视频时间参数,场同步结束，即多少场数后停止产生场同步信号，之后就是场有效数据部分
 
 reg [11:0] hcnt = 12'd0;    //视频水平方向，列计数器，寄存器
 reg [11:0] vcnt = 12'd0;    //视频垂直方向，行计数器，寄存器   
