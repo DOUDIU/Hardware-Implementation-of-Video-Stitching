@@ -3,6 +3,7 @@ visio
 modelsim/*
 !modelsim/wave.do
 
+vivado/ddr4_ex
 vivado/video_stitching/*
 !vivado/video_stitching/video_stitching.xpr
 !vivado/video_stitching/video_stitching_tb_behav.wcfg
