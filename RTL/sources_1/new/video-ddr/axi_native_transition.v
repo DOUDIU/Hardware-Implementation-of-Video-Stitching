@@ -201,12 +201,14 @@ reg     s_axi_bvalid;
 reg     s_axi_arready;
 reg     s_axi_rvalid;
 reg		s_axi_rlast;
-reg  [7:0] burst_counter;//S_AXI_ARLEN
+reg  [7:0] burst_counter;
+reg  [7:0] read_counter;
 
 assign app_cmd = app_cmd_r;
 assign app_addr = app_addr_r;
 assign app_en = app_en_r;
 assign app_wdf_end = app_wdf_wren;
+// assign app_wdf_data = S_AXI_WDATA;
 assign app_wdf_data = app_wdf_data_r;
 assign app_wdf_wren = app_wdf_wren_r;
 assign S_AXI_AWREADY = s_axi_awready;
@@ -219,13 +221,34 @@ assign S_AXI_BRESP = 0;
 assign S_AXI_RRESP = 0;
 assign S_AXI_RLAST = s_axi_rlast;
 
+
+always@(posedge app_clk or posedge app_rst) begin
+	if(app_rst) begin
+		read_counter	<=	1'b0;
+	end
+	else if(S_AXI_RREADY & S_AXI_RVALID) begin
+		read_counter 	<=	read_counter + 1;
+	end
+	else if(s_axi_rlast) begin
+		read_counter 	<=	0;
+	end
+end
+
+always@(posedge app_clk or posedge app_rst) begin
+	if(app_rst) begin
+		app_wdf_data_r	<=	1'b0;
+	end
+	else if(s_axi_wready & S_AXI_WVALID) begin
+		app_wdf_data_r 	<=	S_AXI_WDATA;
+	end
+end
+
 always@(posedge app_clk or posedge app_rst) begin
 	if(app_rst) begin
 		state <= IDLE;
 		app_cmd_r <= 3'b000;
 		app_addr_r <= 1'b0;
 		app_en_r <= 1'b0;
-        app_wdf_data_r <= 1'b0;
         app_wdf_wren_r <= 1'b0;
 
         s_axi_awready  <= 0;
@@ -242,68 +265,83 @@ always@(posedge app_clk or posedge app_rst) begin
                 app_en_r <= 1'b0;
                 app_wdf_wren_r <= 1'b0;
                 s_axi_awready  <= 1'b1;
-                s_axi_wready  <= 1;
-                s_axi_bvalid  <=  0;
+                s_axi_wready  <= 0;
                 s_axi_arready <= 1;
                 s_axi_rvalid <=  0;
 				s_axi_rlast <= 0;
 				if(S_AXI_ARVALID & s_axi_arready) begin
                     state <= MEM_READ;
                     s_axi_arready  <= 0;
-                    
+
 					app_cmd_r <= 3'b001;
-                    app_addr_r <= S_AXI_ARADDR - 16;
-                    s_axi_rvalid <=  1;
+                    app_addr_r <= S_AXI_ARADDR;
+                    s_axi_rvalid <=  1'b1;
+					app_en_r <= 1'b1;
 				end
 				else if(S_AXI_AWVALID & s_axi_awready) begin
 					state <= MEM_WRITE;
-                    s_axi_awready  <= 0;
+                    s_axi_awready  	<= 0;
+                	s_axi_wready  	<= 1;
 
 					app_cmd_r <= 3'b000;
-					app_addr_r <= S_AXI_AWADDR - 16;
+					app_addr_r <= S_AXI_AWADDR;
+					app_en_r	<= 1'b1;
 				end
 			end
 			MEM_READ: begin
                 s_axi_rvalid <=  0;
-                if(app_rdy & S_AXI_RREADY) begin
-                    app_en_r <= 1'b1;
+
+				if(app_rdy & app_en_r) begin
                     app_addr_r <= app_addr_r + 16;
                     burst_counter <= burst_counter + 1;
-                end
+				end
 
                 if(burst_counter == S_AXI_ARLEN) begin
 					state <= READ_END;
                 end
 			end
 			MEM_WRITE: begin
-                if(S_AXI_WVALID & app_rdy) begin
-                    s_axi_wready <= 1'b1;
-                    app_en_r <= 1'b1;
-                    app_addr_r <= app_addr_r + 16;
-                    app_wdf_data_r <= S_AXI_WDATA;
-                    app_wdf_wren_r <= 1'b1;
+                if(app_rdy & app_en_r) begin
+                    s_axi_wready 	<= 1'b1;
+                    app_addr_r 		<= app_addr_r + 16;
+                    app_wdf_wren_r 	<= 1'b1;
                 end
-                else if(s_axi_wready & S_AXI_WVALID & !app_rdy) begin
-                    s_axi_wready <= 1'b0;
-                    app_wdf_data_r <= S_AXI_WDATA;
-                    app_wdf_wren_r <= 1'b0;
+                else begin
+					s_axi_wready 	<= 1'b0;
+					app_wdf_wren_r 	<= 1'b0;
                 end
 
-                if(S_AXI_WLAST) begin
-				    state <= WRITE_END;
-                    app_en_r <= 1'b0;
+                if(S_AXI_WLAST& & s_axi_wready & S_AXI_WVALID) begin
+				    state <= MEM_WRITE_WAIT;
                 end
 			end
 			READ_END:begin
+				app_en_r <= 1'b0;
                 burst_counter <=  0;
-                if (!S_AXI_RREADY) begin
+                if (read_counter == S_AXI_ARLEN) begin
 				    state <= IDLE;
 					s_axi_rlast <= 1;
                 end
             end
+			MEM_WRITE_WAIT: begin
+                if(app_rdy) begin
+                    s_axi_wready 	<= 1'b0;
+                    app_en_r 		<= 1'b0;
+                    app_wdf_wren_r 	<= 1'b1;
+					state <= WRITE_END;
+                end
+                else begin
+					s_axi_wready 	<= 1'b0;
+					app_wdf_wren_r 	<= 1'b0;
+                end
+			end
 			WRITE_END: begin
-                s_axi_bvalid    <=  1;
-				state <= IDLE;
+				app_wdf_wren_r 	<= 1'b0;
+                s_axi_bvalid    <=  1'b1;
+				if(s_axi_bvalid & S_AXI_BREADY) begin
+                	s_axi_bvalid    <=  1'b0;
+					state <= IDLE;
+				end
             end
 			default:
 				state <= IDLE;

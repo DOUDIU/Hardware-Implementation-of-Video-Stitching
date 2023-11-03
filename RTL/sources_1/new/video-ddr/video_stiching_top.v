@@ -280,6 +280,84 @@ fifo_generator_0 u_async_forward_fifo (
     .rd_rst_busy  () 
 );
 
+
+//---------------------------------------------------
+// AXI FULL DATA GENERATOR
+maxi_full_v1_0_M00_AXI  #(
+    //----------------------------------------------------
+    // AXI-FULL parameters
+	    .C_M_TARGET_SLAVE_BASE_ADDR	    (C_M_TARGET_SLAVE_BASE_ADDR)   
+	,   .C_M_AXI_BURST_LEN	            (C_M_AXI_BURST_LEN	       )   
+	,   .C_M_AXI_ID_WIDTH	            (C_M_AXI_ID_WIDTH	       )   
+	,   .C_M_AXI_ADDR_WIDTH	            (C_M_AXI_ADDR_WIDTH	       )   
+	,   .C_M_AXI_DATA_WIDTH	            (AXI4_DATA_WIDTH	       )   
+	,   .C_M_AXI_AWUSER_WIDTH	        (C_M_AXI_AWUSER_WIDTH	   )   
+	,   .C_M_AXI_ARUSER_WIDTH	        (C_M_AXI_ARUSER_WIDTH	   )   
+	,   .C_M_AXI_WUSER_WIDTH	        (C_M_AXI_WUSER_WIDTH	   )   
+	,   .C_M_AXI_RUSER_WIDTH	        (C_M_AXI_RUSER_WIDTH	   )   
+	,   .C_M_AXI_BUSER_WIDTH	        (C_M_AXI_BUSER_WIDTH	   ) 
+)u_maxi_full_v1_0_M00_AXI(
+//----------------------------------------------------
+// AXI-FULL master port
+        .INIT_AXI_TXN       (0)
+    ,   .TXN_DONE           ()
+    ,   .ERROR              ()
+    ,   .M_AXI_ACLK         (M_AXI_ACLK         )
+    ,   .M_AXI_ARESETN      (M_AXI_ARESETN      )
+
+    //----------------Write Address Channel----------------//
+    ,   .M_AXI_AWID         (M_AXI_AWID         )
+    ,   .M_AXI_AWADDR       (M_AXI_AWADDR       )
+    ,   .M_AXI_AWLEN        (M_AXI_AWLEN        )
+    ,   .M_AXI_AWSIZE       (M_AXI_AWSIZE       )
+    ,   .M_AXI_AWBURST      (M_AXI_AWBURST      )
+    ,   .M_AXI_AWLOCK       (M_AXI_AWLOCK       )
+    ,   .M_AXI_AWCACHE      (M_AXI_AWCACHE      )
+    ,   .M_AXI_AWPROT       (M_AXI_AWPROT       )
+    ,   .M_AXI_AWQOS        (M_AXI_AWQOS        )
+    ,   .M_AXI_AWUSER       (M_AXI_AWUSER       )
+    ,   .M_AXI_AWVALID      (M_AXI_AWVALID      )
+    ,   .M_AXI_AWREADY      (M_AXI_AWREADY      )
+
+    //----------------Write Data Channel----------------//
+    ,   .M_AXI_WDATA        (M_AXI_WDATA        )
+    ,   .M_AXI_WSTRB        (M_AXI_WSTRB        )
+    ,   .M_AXI_WLAST        (M_AXI_WLAST        )
+    ,   .M_AXI_WUSER        (M_AXI_WUSER        )
+    ,   .M_AXI_WVALID       (M_AXI_WVALID       )
+    ,   .M_AXI_WREADY       (M_AXI_WREADY       )
+
+    //----------------Write Response Channel----------------//
+    ,   .M_AXI_BID          (M_AXI_BID          )
+    ,   .M_AXI_BRESP        (M_AXI_BRESP        )
+    ,   .M_AXI_BUSER        (M_AXI_BUSER        )
+    ,   .M_AXI_BVALID       (M_AXI_BVALID       )
+    ,   .M_AXI_BREADY       (M_AXI_BREADY       )
+
+    //----------------Read Address Channel----------------//
+    ,   .M_AXI_ARID         (M_AXI_ARID         )
+    ,   .M_AXI_ARADDR       (M_AXI_ARADDR       )
+    ,   .M_AXI_ARLEN        (M_AXI_ARLEN        )
+    ,   .M_AXI_ARSIZE       (M_AXI_ARSIZE       )
+    ,   .M_AXI_ARBURST      (M_AXI_ARBURST      )
+    ,   .M_AXI_ARLOCK       (M_AXI_ARLOCK       )
+    ,   .M_AXI_ARCACHE      (M_AXI_ARCACHE      )
+    ,   .M_AXI_ARPROT       (M_AXI_ARPROT       )
+    ,   .M_AXI_ARQOS        (M_AXI_ARQOS        )
+    ,   .M_AXI_ARUSER       (M_AXI_ARUSER       )
+    ,   .M_AXI_ARVALID      (M_AXI_ARVALID      )
+    ,   .M_AXI_ARREADY      (M_AXI_ARREADY      )
+
+    //----------------Read Data Channel----------------//
+    ,   .M_AXI_RID          (M_AXI_RID          )
+    ,   .M_AXI_RDATA        (M_AXI_RDATA        )
+    ,   .M_AXI_RRESP        (M_AXI_RRESP        )
+    ,   .M_AXI_RLAST        (M_AXI_RLAST        )
+    ,   .M_AXI_RUSER        (M_AXI_RUSER        )
+    ,   .M_AXI_RVALID       (M_AXI_RVALID       )
+    ,   .M_AXI_RREADY       (M_AXI_RREADY       )
+);
+/*
 //---------------------------------------------------
 // FIFO TO AXI FULL
 axi_full_core #(
@@ -398,7 +476,7 @@ axi_full_core #(
     ,   .M_AXI_RVALID       (M_AXI_RVALID       )
     ,   .M_AXI_RREADY       (M_AXI_RREADY       )
 );
-
+*/
 
 wire backward_fifo_full;
 wire backward_fifo_empty;
@@ -421,25 +499,6 @@ fifo_generator_0 u_async_backward_fifo (
     .wr_rst_busy  (),
     .rd_rst_busy  () 
 );
-
-    // ila_0 ila_back_fifo (
-    //         .clk    (M_AXI_ACLK    ) // input wire clk
-
-    //     ,   .probe1 (video_fifo_wr_data_out     ) // input wire [127:0]  probe1 
-    //     ,   .probe0 (video_fifo_wr_enable       ) // input wire [0:0]  probe0  
-    //     ,   .probe3 (video_fifo_rd_data_out     ) // input wire [127:0]  probe3
-    //     ,   .probe2 (video_fifo_rd_enable       ) // input wire [0:0]  probe2  
-    //     ,   .probe4 (backward_fifo_full         ) // input wire [0:0]  probe4 
-    //     ,   .probe5 (backward_fifo_empty        ) // input wire [0:0]  probe5 
-    //     ,   .probe6 (video_vsync                ) // input wire [0:0]  probe6 
-    //     ,   .probe7 (video_href                 ) // input wire [0:0]  probe7 
-    //     ,   .probe8 (video_de                   ) // input wire [0:0]  probe8 
-    //     ,   .probe9 (video_data                 ) // input wire [23:0]  probe9
-	//     ,   .probe10(rd_data_count              ) // input wire [11:0]  probe10 
-	//     ,   .probe11(wr_data_count              )  // input wire [11:0]  probe11
-    //     ,   .probe12(video_clk                  )
-    // );
-
 
 fifo_to_video_ctrl#(
         .H_SYNC                     (H_SYNC                 )
