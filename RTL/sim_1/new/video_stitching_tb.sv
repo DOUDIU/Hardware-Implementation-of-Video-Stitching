@@ -19,7 +19,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 module video_stitching_tb(
 //----------------------------------------------------
 // DDR native port
@@ -66,8 +65,8 @@ initial #1 video_clk = 1;
 always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
-	     .PIC_PATH	("../../../../../../pic/afternoon.bmp")
-		// .PIC_PATH	("..\\pic\\eva.bmp")
+	    //  .PIC_PATH	("../../../../../../pic/afternoon.bmp")
+		.PIC_PATH	("..\\..\\..\\..\\..\\..\\pic\\eva.bmp")
 	,	.IMG_HDISP 	(1280)
 	,	.IMG_VDISP 	(720)
 )u_sim_cmos0(
@@ -109,20 +108,20 @@ sim_cmos #(
 // );
 
 
-// video_to_pic #(
-//         .PIC_PATH       ("..\\pic\\outcom.bmp")
-//     ,   .START_FRAME    (4                    )
-// 	,	.IMG_HDISP      (1280                 )
-// 	,	.IMG_VDISP      (720                  )
-//     ,   .DATA_WIDTH     (24                   )
-// )u_video_to_pic0(
-//         .clk            (video_clk      )
-//     ,   .rst_n          (1)
-//     ,   .video_vsync    (video_vsync    )
-//     ,   .video_hsync    (video_hsync    )
-//     ,   .video_de       (video_de       )
-//     ,   .video_data     (video_data     )
-// );
+video_to_pic #(
+        .PIC_PATH       ("..\\..\\..\\..\\..\\..\\pic\\outcom.bmp")
+    ,   .START_FRAME    (3                    )
+	,	.IMG_HDISP      (1280                 )
+	,	.IMG_VDISP      (720                  )
+    ,   .DATA_WIDTH     (24                   )
+)u_video_to_pic0(
+        .clk            (video_clk      )
+    ,   .rst_n          (1)
+    ,   .video_vsync    (video_vsync    )
+    ,   .video_hsync    (video_hsync    )
+    ,   .video_de       (video_de       )
+    ,   .video_data     (video_data     )
+);
 
 video_stiching_top #(
         .AXI4_DATA_WIDTH        ( 128 )

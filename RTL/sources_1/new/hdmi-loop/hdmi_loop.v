@@ -201,91 +201,122 @@ lut_adv7511 lut_adv7511_m0(
 `else
     assign  vout_clk    = vin_clk;
 `endif
+wire    vout_vs_t;
+wire    vout_hs_t;
+assign vout_vs     = !vout_vs_t;
+assign vout_hs     = !vout_hs_t;
+video_stiching_top #(
+        .AXI4_DATA_WIDTH        ( 128 )
+        // Base address of targeted slave
+	,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h00000000)
+		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
+	,   .C_M_AXI_BURST_LEN	    ( 64 )
+		// Thread ID Width
+	,   .C_M_AXI_ID_WIDTH	    ( 1 )
+		// Width of Address Bus
+	,   .C_M_AXI_ADDR_WIDTH	    ( 32 )
+		// Width of Data Bus
+	,   .C_M_AXI_DATA_WIDTH	    ( 128 )
+		// Width of User Write Address Bus
+	,   .C_M_AXI_AWUSER_WIDTH	( 0 )
+		// Width of User Read Address Bus
+	,   .C_M_AXI_ARUSER_WIDTH	( 0 )
+		// Width of User Write Data Bus
+	,   .C_M_AXI_WUSER_WIDTH	( 0 )
+		// Width of User Read Data Bus
+	,   .C_M_AXI_RUSER_WIDTH	( 0 )
+	    // Width of User Response Bus
+	,   .C_M_AXI_BUSER_WIDTH	( 0 )
+)u_video_stiching_top(
+//----------------------------------------------------
+// Cmos port
+	 	.cmos_clk				    (vin_clk		    )
+    ,   .cmos_vsync 			    (!vin_vs_d2         )
+    ,   .cmos_href  			    (!vin_hs_d2         )
+    ,   .cmos_clken 			    (vin_de_d2          )
+    ,   .cmos_data  			    (vin_data_d2        )
 
+//----------------------------------------------------
+// DDR native port
+    ,   .video_clk                  (vin_clk            )
+    ,   .video_vsync                (vout_vs_t          )
+    ,   .video_href                 (vout_hs_t          )
+    ,   .video_de                   (vout_de            )
+    ,   .video_data                 (vout_data          )
 
-`ifndef PL_DDR
-    design_1_wrapper u_design_1_wrapper(
-    `ifndef HDMI_IN
-            .cmos_clk           (clk_12m            )
-        ,   .cmos_rst_n         (locked             )
-        ,   .cmos_vsync         (cam_vs_out         )
-        ,   .cmos_href          (!cam_hs_out        )
-        ,   .cmos_de            (cam_de_out         )
-        ,   .cmos_data          (cam_data_out       )
+    ,   .sys_rst                    (!sys_rst_n         )
+    ,   .init_calib_complete        (c0_init_calib_complete_0)
+    ,   .ui_clkout_100m             (ui_clkout_100m     )
+    ,   .c0_sys_clk_p               (sys_clk_p          )
+    ,   .c0_sys_clk_n               (sys_clk_n          )
+    ,   .c0_ddr4_act_n              (c0_ddr4_act_n      )
+    ,   .c0_ddr4_adr                (c0_ddr4_adr        )
+    ,   .c0_ddr4_ba                 (c0_ddr4_ba         )
+    ,   .c0_ddr4_bg                 (c0_ddr4_bg         )
+    ,   .c0_ddr4_cke                (c0_ddr4_cke        )
+    ,   .c0_ddr4_odt                (c0_ddr4_odt        )
+    ,   .c0_ddr4_cs_n               (c0_ddr4_cs_n       )
+    ,   .c0_ddr4_ck_t               (c0_ddr4_ck_t       )
+    ,   .c0_ddr4_ck_c               (c0_ddr4_ck_c       )
+    ,   .c0_ddr4_reset_n            (c0_ddr4_reset_n    )
+    ,   .c0_ddr4_dm_dbi_n           (c0_ddr4_dm_n       )
+    ,   .c0_ddr4_dq                 (c0_ddr4_dq         )
+    ,   .c0_ddr4_dqs_c              (c0_ddr4_dqs_c      )
+    ,   .c0_ddr4_dqs_t              (c0_ddr4_dqs_t      )
+);
 
-        ,   .video_clk_0        (clk_75m            )
-        ,   .video_vsync_0      (vout_vs            )
-        ,   .video_href_0       (vout_hs            )
-        ,   .video_de_0         (vout_de            )
-        ,   .video_data_0       (vout_data          )
-    `else
-            .cmos_clk           (vin_clk            )
-        ,   .cmos_rst_n         (locked             )
-        ,   .cmos_vsync         (vin_vs_d2          )
-        ,   .cmos_href          (vin_hs_d2          )
-        ,   .cmos_de            (vin_de_d2          )
-        ,   .cmos_data          (vin_data_d2        )
+    // design_2_wrapper u_design_2_wrapper(
 
-        ,   .video_clk_0        (vin_clk            )
-        ,   .video_vsync_0      (vout_vs            )
-        ,   .video_href_0       (vout_hs            )
-        ,   .video_de_0         (vout_de            )
-        ,   .video_data_0       (vout_data          )
-    `endif
-    );
-`else
-    design_2_wrapper u_design_2_wrapper(
+    // `ifndef HDMI_IN
+    //         .cmos_clk           (clk_12m            )
+    //     ,   .cmos_rst_n         (locked             )
+    //     ,   .cmos_vsync         (cam_vs_out         )
+    //     ,   .cmos_href          (!cam_hs_out        )
+    //     ,   .cmos_de            (cam_de_out         )
+    //     ,   .cmos_data          (cam_data_out       )
 
-    `ifndef HDMI_IN
-            .cmos_clk           (clk_12m            )
-        ,   .cmos_rst_n         (locked             )
-        ,   .cmos_vsync         (cam_vs_out         )
-        ,   .cmos_href          (!cam_hs_out        )
-        ,   .cmos_de            (cam_de_out         )
-        ,   .cmos_data          (cam_data_out       )
+    //     ,   .video_clk_0        (clk_75m            )
+    //     ,   .video_vsync_0      (vout_vs            )
+    //     ,   .video_href_0       (vout_hs            )
+    //     ,   .video_de_0         (vout_de            )
+    //     ,   .video_data_0       (vout_data          )
+    // `else
+    //         .cmos_clk           (vin_clk            )
+    //     ,   .cmos_rst_n         (locked             )
+    //     ,   .cmos_vsync         (vin_vs_d2          )
+    //     ,   .cmos_href          (vin_hs_d2          )
+    //     ,   .cmos_de            (vin_de_d2          )
+    //     ,   .cmos_data          (vin_data_d2        )
 
-        ,   .video_clk_0        (clk_75m            )
-        ,   .video_vsync_0      (vout_vs            )
-        ,   .video_href_0       (vout_hs            )
-        ,   .video_de_0         (vout_de            )
-        ,   .video_data_0       (vout_data          )
-    `else
-            .cmos_clk           (vin_clk            )
-        ,   .cmos_rst_n         (locked             )
-        ,   .cmos_vsync         (vin_vs_d2          )
-        ,   .cmos_href          (vin_hs_d2          )
-        ,   .cmos_de            (vin_de_d2          )
-        ,   .cmos_data          (vin_data_d2        )
+    //     ,   .video_clk_0        (vin_clk            )
+    //     ,   .video_vsync_0      (vout_vs            )
+    //     ,   .video_href_0       (vout_hs            )
+    //     ,   .video_de_0         (vout_de            )
+    //     ,   .video_data_0       (vout_data          )
+    // `endif
 
-        ,   .video_clk_0        (vin_clk            )
-        ,   .video_vsync_0      (vout_vs            )
-        ,   .video_href_0       (vout_hs            )
-        ,   .video_de_0         (vout_de            )
-        ,   .video_data_0       (vout_data          )
-    `endif
+    //     ,   .c0_sys_clk_clk_n           (sys_clk_n                  )
+    //     ,   .c0_sys_clk_clk_p           (sys_clk_p                  )
 
-        ,   .c0_sys_clk_clk_n           (sys_clk_n                  )
-        ,   .c0_sys_clk_clk_p           (sys_clk_p                  )
+    //     ,   .ui_clkout_100m             (ui_clkout_100m             )
 
-        ,   .ui_clkout_100m             (ui_clkout_100m             )
+    //     ,   .c0_init_calib_complete_0   (c0_init_calib_complete_0   )
+    //     ,   .c0_ddr4_act_n              (c0_ddr4_act_n              )
+    //     ,   .c0_ddr4_adr                (c0_ddr4_adr                )
+    //     ,   .c0_ddr4_ba                 (c0_ddr4_ba                 )
+    //     ,   .c0_ddr4_bg                 (c0_ddr4_bg                 )
+    //     ,   .c0_ddr4_ck_c               (c0_ddr4_ck_c               )
+    //     ,   .c0_ddr4_ck_t               (c0_ddr4_ck_t               )
+    //     ,   .c0_ddr4_cke                (c0_ddr4_cke                )
+    //     ,   .c0_ddr4_cs_n               (c0_ddr4_cs_n               )
+    //     ,   .c0_ddr4_dm_n               (c0_ddr4_dm_n               )
+    //     ,   .c0_ddr4_dq                 (c0_ddr4_dq                 )
+    //     ,   .c0_ddr4_dqs_c              (c0_ddr4_dqs_c              )
+    //     ,   .c0_ddr4_dqs_t              (c0_ddr4_dqs_t              )
+    //     ,   .c0_ddr4_odt                (c0_ddr4_odt                )
+    //     ,   .c0_ddr4_reset_n            (c0_ddr4_reset_n            )
+    //     ,   .sys_rst_n                  (sys_rst_n                  )
+    // );
 
-        ,   .c0_init_calib_complete_0   (c0_init_calib_complete_0   )
-        ,   .c0_ddr4_act_n              (c0_ddr4_act_n              )
-        ,   .c0_ddr4_adr                (c0_ddr4_adr                )
-        ,   .c0_ddr4_ba                 (c0_ddr4_ba                 )
-        ,   .c0_ddr4_bg                 (c0_ddr4_bg                 )
-        ,   .c0_ddr4_ck_c               (c0_ddr4_ck_c               )
-        ,   .c0_ddr4_ck_t               (c0_ddr4_ck_t               )
-        ,   .c0_ddr4_cke                (c0_ddr4_cke                )
-        ,   .c0_ddr4_cs_n               (c0_ddr4_cs_n               )
-        ,   .c0_ddr4_dm_n               (c0_ddr4_dm_n               )
-        ,   .c0_ddr4_dq                 (c0_ddr4_dq                 )
-        ,   .c0_ddr4_dqs_c              (c0_ddr4_dqs_c              )
-        ,   .c0_ddr4_dqs_t              (c0_ddr4_dqs_t              )
-        ,   .c0_ddr4_odt                (c0_ddr4_odt                )
-        ,   .c0_ddr4_reset_n            (c0_ddr4_reset_n            )
-        ,   .sys_rst_n                  (sys_rst_n                  )
-    );
-`endif 
 
 endmodule 

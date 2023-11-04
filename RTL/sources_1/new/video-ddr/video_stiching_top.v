@@ -22,9 +22,9 @@ module video_stiching_top#(
     ,   parameter AXI4_DATA_WIDTH = 128
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
+	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h00000000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   parameter integer C_M_AXI_BURST_LEN	= 16
+	,   parameter integer C_M_AXI_BURST_LEN	= 64
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 1
 		// Width of Address Bus
@@ -59,128 +59,10 @@ module video_stiching_top#(
     ,   output  [23:0]  video_data
 
 //----------------------------------------------------
-// AXI-FULL master port
-    //----------------Write Address Channel----------------//
-    // Master Interface Write Address ID
-    ,   output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_AWID
-    // Master Interface Write Address
-    ,   output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR
-    // Burst length. The burst length gives the exact number of transfers in a burst
-    ,   output wire [7 : 0] M_AXI_AWLEN
-    // Burst size. This signal indicates the size of each transfer in the burst
-    ,   output wire [2 : 0] M_AXI_AWSIZE
-    // Burst type. The burst type and the size information, 
-    // determine how the address for each transfer within the burst is calculated.
-    ,   output wire [1 : 0] M_AXI_AWBURST
-    // Lock type. Provides additional information about the
-    // atomic characteristics of the transfer.
-    ,   output wire  M_AXI_AWLOCK
-    // Memory type. This signal indicates how transactions
-    // are required to progress through a system.
-    ,   output wire [3 : 0] M_AXI_AWCACHE
-    // Protection type. This signal indicates the privilege
-    // and security level of the transaction, and whether
-    // the transaction is a data access or an instruction access.
-    ,   output wire [2 : 0] M_AXI_AWPROT
-    // Quality of Service, QoS identifier sent for each write transaction.
-    ,   output wire [3 : 0] M_AXI_AWQOS
-    // Optional User-defined signal in the write address channel.
-    ,   output wire [C_M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER
-    // Write address valid. This signal indicates that
-    // the channel is signaling valid write address and control information.
-    ,   output wire  M_AXI_AWVALID
-    // Write address ready. This signal indicates that
-    // the slave is ready to accept an address and associated control signals
-    ,   input wire  M_AXI_AWREADY
-
-    //----------------Write Data Channel----------------//
-    // Master Interface Write Data.
-    ,   output wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA
-    // Write strobes. This signal indicates which byte
-    // lanes hold valid data. There is one write strobe
-    // bit for each eight bits of the write data bus.
-    ,   output wire [C_M_AXI_DATA_WIDTH/8-1 : 0] M_AXI_WSTRB
-    // Write last. This signal indicates the last transfer in a write burst.
-    ,   output wire  M_AXI_WLAST
-    // Optional User-defined signal in the write data channel.
-    ,   output wire [C_M_AXI_WUSER_WIDTH-1 : 0] M_AXI_WUSER
-    // Write valid. This signal indicates that valid write
-    // data and strobes are available
-    ,   output wire  M_AXI_WVALID
-    // Write ready. This signal indicates that the slave
-    // can accept the write data.
-    ,   input wire  M_AXI_WREADY
-
-    //----------------Write Response Channel----------------//
-    // Master Interface Write Response.
-    ,   input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_BID
-    // Write response. This signal indicates the status of the write transaction.
-    ,   input wire [1 : 0] M_AXI_BRESP
-    // Optional User-defined signal in the write response channel
-    ,   input wire [C_M_AXI_BUSER_WIDTH-1 : 0] M_AXI_BUSER
-    // Write response valid. This signal indicates that the
-    // channel is signaling a valid write response.
-    ,   input wire  M_AXI_BVALID
-    // Response ready. This signal indicates that the master
-    // can accept a write response.
-    ,   output wire  M_AXI_BREADY
-
-    //----------------Read Address Channel----------------//
-    // Master Interface Read Address.
-    ,   output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_ARID
-    // Read address. This signal indicates the initial
-    // address of a read burst transaction.
-    ,   output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_ARADDR
-    // Burst length. The burst length gives the exact number of transfers in a burst
-    ,   output wire [7 : 0] M_AXI_ARLEN
-    // Burst size. This signal indicates the size of each transfer in the burst
-    ,   output wire [2 : 0] M_AXI_ARSIZE
-    // Burst type. The burst type and the size information, 
-    // determine how the address for each transfer within the burst is calculated.
-    ,   output wire [1 : 0] M_AXI_ARBURST
-    // Lock type. Provides additional information about the
-    // atomic characteristics of the transfer.
-    ,   output wire  M_AXI_ARLOCK
-    // Memory type. This signal indicates how transactions
-    // are required to progress through a system.
-    ,   output wire [3 : 0] M_AXI_ARCACHE
-    // Protection type. This signal indicates the privilege
-    // and security level of the transaction, and whether
-    // the transaction is a data access or an instruction access.
-    ,   output wire [2 : 0] M_AXI_ARPROT
-    // Quality of Service, QoS identifier sent for each read transaction
-    ,   output wire [3 : 0] M_AXI_ARQOS
-    // Optional User-defined signal in the read address channel.
-    ,   output wire [C_M_AXI_ARUSER_WIDTH-1 : 0] M_AXI_ARUSER
-    // Write address valid. This signal indicates that
-    // the channel is signaling valid read address and control information
-    ,   output wire  M_AXI_ARVALID
-    // Read address ready. This signal indicates that
-    // the slave is ready to accept an address and associated control signals
-    ,   input wire  M_AXI_ARREADY
-
-    //----------------Read Data Channel----------------//
-    // Read ID tag. This signal is the identification tag
-    // for the read data group of signals generated by the slave.
-    ,   input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_RID
-    // Master Read Data
-    ,   input wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_RDATA
-    // Read response. This signal indicates the status of the read transfer
-    ,   input wire [1 : 0] M_AXI_RRESP
-    // Read last. This signal indicates the last transfer in a read burst
-    ,   input wire  M_AXI_RLAST
-    // Optional User-defined signal in the read address channel.
-    ,   input wire [C_M_AXI_RUSER_WIDTH-1 : 0] M_AXI_RUSER
-    // Read valid. This signal indicates that the channel
-    // is signaling the required read data.
-    ,   input wire  M_AXI_RVALID
-    // Read ready. This signal indicates that the master can
-    // accept the read data and response information.
-    ,   output wire  M_AXI_RREADY
-
-//----------------------------------------------------
 // DDR native port
-    ,   input           sys_rst               
+    ,   input           sys_rst        
+    ,   output          init_calib_complete    
+    ,   output          ui_clkout_100m   
     ,   input           c0_sys_clk_p           
     ,   input           c0_sys_clk_n           
 	,   output          c0_ddr4_act_n   
@@ -198,6 +80,50 @@ module video_stiching_top#(
 	,   inout   [1 :0]  c0_ddr4_dqs_c   
 	,   inout   [1 :0]  c0_ddr4_dqs_t   
 );
+//----------------------------------------------------
+// AXI-FULL master port
+wire    [C_M_AXI_ID_WIDTH-1 : 0]        M_AXI_AWID          ;
+wire    [C_M_AXI_ADDR_WIDTH-1 : 0]      M_AXI_AWADDR        ;
+wire    [7 : 0]                         M_AXI_AWLEN         ;
+wire    [2 : 0]                         M_AXI_AWSIZE        ;
+wire    [1 : 0]                         M_AXI_AWBURST       ;
+wire                                    M_AXI_AWLOCK        ;
+wire    [3 : 0]                         M_AXI_AWCACHE       ;
+wire    [2 : 0]                         M_AXI_AWPROT        ;
+wire    [3 : 0]                         M_AXI_AWQOS         ;
+wire    [C_M_AXI_AWUSER_WIDTH-1 : 0]    M_AXI_AWUSER        ;
+wire                                    M_AXI_AWVALID       ;
+wire                                    M_AXI_AWREADY       ;
+wire    [C_M_AXI_DATA_WIDTH-1 : 0]      M_AXI_WDATA         ;
+wire    [C_M_AXI_DATA_WIDTH/8-1 : 0]    M_AXI_WSTRB         ;
+wire                                    M_AXI_WLAST         ;
+wire    [C_M_AXI_WUSER_WIDTH-1 : 0]     M_AXI_WUSER         ;
+wire                                    M_AXI_WVALID        ;
+wire                                    M_AXI_WREADY        ;
+wire    [C_M_AXI_ID_WIDTH-1 : 0]        M_AXI_BID           ;
+wire    [1 : 0]                         M_AXI_BRESP         ;
+wire    [C_M_AXI_BUSER_WIDTH-1 : 0]     M_AXI_BUSER         ;
+wire                                    M_AXI_BVALID        ;
+wire                                    M_AXI_BREADY        ;
+wire    [C_M_AXI_ID_WIDTH-1 : 0]        M_AXI_ARID          ;
+wire    [C_M_AXI_ADDR_WIDTH-1 : 0]      M_AXI_ARADDR        ;
+wire    [7 : 0]                         M_AXI_ARLEN         ;
+wire    [2 : 0]                         M_AXI_ARSIZE        ;
+wire    [1 : 0]                         M_AXI_ARBURST       ;
+wire                                    M_AXI_ARLOCK        ;
+wire    [3 : 0]                         M_AXI_ARCACHE       ;
+wire    [2 : 0]                         M_AXI_ARPROT        ;
+wire    [3 : 0]                         M_AXI_ARQOS         ;
+wire    [C_M_AXI_ARUSER_WIDTH-1 : 0]    M_AXI_ARUSER        ;
+wire                                    M_AXI_ARVALID       ;
+wire                                    M_AXI_ARREADY       ;
+wire    [C_M_AXI_ID_WIDTH-1 : 0]        M_AXI_RID           ;
+wire    [C_M_AXI_DATA_WIDTH-1 : 0]      M_AXI_RDATA         ;
+wire    [1 : 0]                         M_AXI_RRESP         ;
+wire                                    M_AXI_RLAST         ;
+wire    [C_M_AXI_RUSER_WIDTH-1 : 0]     M_AXI_RUSER         ;
+wire                                    M_AXI_RVALID        ;
+wire                                    M_AXI_RREADY        ;
 
 localparam nCK_PER_CLK          = 4;
 localparam ADDR_WIDTH           = 28;
@@ -206,7 +132,6 @@ localparam PAYLOAD_WIDTH        = 16;
 localparam APP_DATA_WIDTH       = 2 * nCK_PER_CLK * PAYLOAD_WIDTH;
 localparam APP_MASK_WIDTH       = APP_DATA_WIDTH / 8;
 // DDR native app port
-wire                                init_calib_complete     ;
 wire                                app_clk                 ;
 wire                                app_rst                 ;
 wire    [MEM_IF_ADDR_BITS-1:0]      app_addr                ;
@@ -265,6 +190,10 @@ video_to_fifo_ctrl #(
     ,   .AXI_FULL_BURST_READY   (cmos_burst_ready       )
 );
 
+wire forward_fifo_full;
+wire forward_fifo_empty;
+wire [12:0]  forward_rd_count;
+wire [12:0]  forward_wr_count;
 
 fifo_generator_0 u_async_forward_fifo (
     .rst          (!cmos_vsync | !M_AXI_ARESETN ),
@@ -274,13 +203,36 @@ fifo_generator_0 u_async_forward_fifo (
     .wr_en        (cmos_fifo_wr_enable          ),
     .rd_en        (cmos_fifo_rd_enable          ),
     .dout         (cmos_fifo_rd_data_out        ),
-    .full         (),
-    .empty        (),
+    .full         (forward_fifo_full            ),
+    .empty        (forward_fifo_empty           ),
+
+    .rd_data_count(forward_rd_count             ),
+    .wr_data_count(forward_wr_count             ),
     .wr_rst_busy  (),
     .rd_rst_busy  () 
 );
 
+`ifndef SIM
+ila_0 ila_for_fifo (
+        .clk    (M_AXI_ACLK    ) // input wire clk
 
+    ,   .probe1 (cmos_fifo_wr_data_out      ) // input wire [127:0]  probe1 
+    ,   .probe0 (cmos_fifo_wr_enable        ) // input wire [0:0]  probe0  
+    ,   .probe3 (cmos_fifo_rd_data_out      ) // input wire [127:0]  probe3
+    ,   .probe2 (cmos_fifo_rd_enable        ) // input wire [0:0]  probe2  
+    ,   .probe4 (forward_fifo_full          ) // input wire [0:0]  probe4 
+    ,   .probe5 (forward_fifo_empty         ) // input wire [0:0]  probe5 
+    ,   .probe6 (cmos_vsync                 ) // input wire [0:0]  probe6 
+    ,   .probe7 (cmos_href                  ) // input wire [0:0]  probe7 
+    ,   .probe8 (cmos_clken                 ) // input wire [0:0]  probe8 
+    ,   .probe9 (cmos_data                  ) // input wire [23:0]  probe9
+    ,   .probe10(forward_rd_count           ) // input wire [11:0]  probe10 
+    ,   .probe11(forward_wr_count           )  // input wire [11:0]  probe11
+    ,   .probe12(cmos_clk                   )
+);
+`endif
+
+`ifdef test 
 //---------------------------------------------------
 // AXI FULL DATA GENERATOR
 maxi_full_v1_0_M00_AXI  #(
@@ -357,7 +309,7 @@ maxi_full_v1_0_M00_AXI  #(
     ,   .M_AXI_RVALID       (M_AXI_RVALID       )
     ,   .M_AXI_RREADY       (M_AXI_RREADY       )
 );
-/*
+`else
 //---------------------------------------------------
 // FIFO TO AXI FULL
 axi_full_core #(
@@ -476,12 +428,13 @@ axi_full_core #(
     ,   .M_AXI_RVALID       (M_AXI_RVALID       )
     ,   .M_AXI_RREADY       (M_AXI_RREADY       )
 );
-*/
+`endif
+
 
 wire backward_fifo_full;
 wire backward_fifo_empty;
-wire [12:0]  rd_data_count;
-wire [12:0]  wr_data_count;
+wire [12:0]  backward_rd_count;
+wire [12:0]  backward_wr_count;
 
 fifo_generator_0 u_async_backward_fifo (
     .rst          (!video_fifo_rst_n | !M_AXI_ARESETN   ),
@@ -494,11 +447,31 @@ fifo_generator_0 u_async_backward_fifo (
     .full         (backward_fifo_full                   ),
     .empty        (backward_fifo_empty                  ),
 
-    .rd_data_count(rd_data_count                        ),
-    .wr_data_count(wr_data_count                        ),
+    .rd_data_count(backward_rd_count                    ),
+    .wr_data_count(backward_wr_count                    ),
     .wr_rst_busy  (),
     .rd_rst_busy  () 
 );
+
+`ifndef SIM
+ila_0 ila_back_fifo (
+        .clk    (M_AXI_ACLK    ) // input wire clk
+
+    ,   .probe1 (video_fifo_wr_data_out     ) // input wire [127:0]  probe1 
+    ,   .probe0 (video_fifo_wr_enable       ) // input wire [0:0]  probe0  
+    ,   .probe3 (video_fifo_rd_data_out     ) // input wire [127:0]  probe3
+    ,   .probe2 (video_fifo_rd_enable       ) // input wire [0:0]  probe2  
+    ,   .probe4 (backward_fifo_full         ) // input wire [0:0]  probe4 
+    ,   .probe5 (backward_fifo_empty        ) // input wire [0:0]  probe5 
+    ,   .probe6 (video_vsync                ) // input wire [0:0]  probe6 
+    ,   .probe7 (video_href                 ) // input wire [0:0]  probe7 
+    ,   .probe8 (video_de                   ) // input wire [0:0]  probe8 
+    ,   .probe9 (video_data                 ) // input wire [23:0]  probe9
+    ,   .probe10(backward_rd_count          ) // input wire [11:0]  probe10 
+    ,   .probe11(backward_wr_count          )  // input wire [11:0]  probe11
+    ,   .probe12(video_clk                  )
+);
+`endif
 
 fifo_to_video_ctrl#(
         .H_SYNC                     (H_SYNC                 )
@@ -536,6 +509,7 @@ fifo_to_video_ctrl#(
 
 ddr4 u_ddr4(
         .sys_rst                    (sys_rst                )
+    ,   .addn_ui_clkout1            (ui_clkout_100m         )
     ,   .c0_sys_clk_p               (c0_sys_clk_p           )
     ,   .c0_sys_clk_n               (c0_sys_clk_n           )
     ,   .c0_ddr4_act_n              (c0_ddr4_act_n          )
@@ -658,5 +632,27 @@ axi_native_transition#(
     ,   .S_AXI_RREADY       (M_AXI_RREADY       )
 );
 
+`ifndef SIM
+ila_1 u_ila_1 (
+	.clk        (M_AXI_ACLK         ),
+
+	.probe0     (M_AXI_AWVALID      ),
+	.probe1     (M_AXI_AWREADY      ),
+	.probe2     (M_AXI_WLAST        ),
+	.probe3     (M_AXI_WVALID       ),
+	.probe4     (M_AXI_WREADY       ),
+	.probe5     (M_AXI_BVALID       ),
+	.probe6     (M_AXI_BREADY       ),
+	.probe7     (M_AXI_ARREADY      ),
+	.probe8     (M_AXI_ARVALID      ),
+	.probe9     (M_AXI_RLAST        ),
+	.probe10    (M_AXI_RVALID       ),
+	.probe11    (M_AXI_RREADY       ),
+    .probe12    (cmos_burst_valid   ),
+    .probe13    (cmos_burst_ready   ),
+    .probe14    (video_burst_valid  ),
+    .probe15    (video_burst_ready  )
+);
+`endif
 
 endmodule
