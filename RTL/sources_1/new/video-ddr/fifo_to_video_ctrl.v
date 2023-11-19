@@ -1,15 +1,15 @@
 module fifo_to_video_ctrl#(
-    parameter  H_SYNC   =  12'd44   ,
-    parameter  H_BACK   =  12'd148  ,
-    parameter  H_DISP   =  12'd1920 ,
-    parameter  H_FRONT  =  12'd88   ,
-    parameter  H_TOTAL  =  12'd2200 ,
+    parameter  H_SYNC   =  12'd40   ,
+    parameter  H_BACK   =  12'd220  ,
+    parameter  H_DISP   =  12'd1280 ,
+    parameter  H_FRONT  =  12'd110  ,
+    parameter  H_TOTAL  =  H_SYNC + H_BACK + H_DISP + H_FRONT,
 
     parameter  V_SYNC   =  12'd5    ,
-    parameter  V_BACK   =  12'd36   ,
-    parameter  V_DISP   =  12'd1080 ,
-    parameter  V_FRONT  =  12'd4    ,
-    parameter  V_TOTAL  =  12'd1125 ,
+    parameter  V_BACK   =  12'd20   ,
+    parameter  V_DISP   =  12'd720  ,
+    parameter  V_FRONT  =  12'd5    ,
+    parameter  V_TOTAL  =  V_SYNC + V_BACK + V_DISP + V_FRONT,
 
     parameter  AXI4_DATA_WIDTH = 128
 )(

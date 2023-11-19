@@ -15,9 +15,9 @@ module video_stiching_top#(
     ,   parameter AXI4_DATA_WIDTH = 128
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h0F000000
+	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h00000000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   parameter integer C_M_AXI_BURST_LEN	= 16
+	,   parameter integer C_M_AXI_BURST_LEN	= 32
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 1
 		// Width of Address Bus
@@ -62,6 +62,22 @@ module video_stiching_top#(
     ,   input           cmos2_href      
     ,   input           cmos2_clken     
     ,   input   [23:0]  cmos2_data        
+
+//----------------------------------------------------
+// Cmos port3
+    ,   input           cmos3_clk       
+    ,   input           cmos3_vsync     
+    ,   input           cmos3_href      
+    ,   input           cmos3_clken     
+    ,   input   [23:0]  cmos3_data   
+
+//----------------------------------------------------
+// Cmos port4
+    ,   input           cmos4_clk       
+    ,   input           cmos4_vsync     
+    ,   input           cmos4_href      
+    ,   input           cmos4_clken     
+    ,   input   [23:0]  cmos4_data        
 
 //----------------------------------------------------
 // Video port
@@ -196,11 +212,11 @@ module video_stiching_top#(
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
 );
-wire           cmos_clk        [0 : 2]  ;
-wire           cmos_vsync      [0 : 2]  ;
-wire           cmos_href       [0 : 2]  ;
-wire           cmos_clken      [0 : 2]  ;
-wire   [23:0]  cmos_data       [0 : 2]  ;
+wire           cmos_clk        [0 : 4]  ;
+wire           cmos_vsync      [0 : 4]  ;
+wire           cmos_href       [0 : 4]  ;
+wire           cmos_clken      [0 : 4]  ;
+wire   [23:0]  cmos_data       [0 : 4]  ;
 
 assign      cmos_clk   [0]  =   cmos0_clk       ;
 assign      cmos_vsync [0]  =   cmos0_vsync     ;
@@ -220,13 +236,25 @@ assign      cmos_href  [2]  =   cmos2_href      ;
 assign      cmos_clken [2]  =   cmos2_clken     ;
 assign      cmos_data  [2]  =   cmos2_data      ;
 
+assign      cmos_clk   [3]  =   cmos3_clk       ;
+assign      cmos_vsync [3]  =   cmos3_vsync     ;
+assign      cmos_href  [3]  =   cmos3_href      ;
+assign      cmos_clken [3]  =   cmos3_clken     ;
+assign      cmos_data  [3]  =   cmos3_data      ;
 
-wire                                cmos_burst_valid        [0 : 2];
-wire                                cmos_burst_ready        [0 : 2];
-wire                                cmos_fifo_wr_enable     [0 : 2];
-wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_wr_data_out   [0 : 2];
-wire                                cmos_fifo_rd_enable     [0 : 2];
-wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_rd_data_out   [0 : 2];
+assign      cmos_clk   [4]  =   cmos4_clk       ;
+assign      cmos_vsync [4]  =   cmos4_vsync     ;
+assign      cmos_href  [4]  =   cmos4_href      ;
+assign      cmos_clken [4]  =   cmos4_clken     ;
+assign      cmos_data  [4]  =   cmos4_data      ;
+
+
+wire                                cmos_burst_valid        [0 : 4];
+wire                                cmos_burst_ready        [0 : 4];
+wire                                cmos_fifo_wr_enable     [0 : 4];
+wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_wr_data_out   [0 : 4];
+wire                                cmos_fifo_rd_enable     [0 : 4];
+wire    [AXI4_DATA_WIDTH-1 : 0]     cmos_fifo_rd_data_out   [0 : 4];
 
 wire                                video_burst_valid       ;
 wire                                video_burst_ready       ;
@@ -238,7 +266,7 @@ wire                                video_fifo_rst_n        ;
 
 
 generate 
-    for(genvar i = 0; i < 3; i = i + 1) begin
+    for(genvar i = 0; i < 5; i = i + 1) begin
         video_to_fifo_ctrl u_cmos_to_fifo_ctrl(
                 .video_rst_n            (rst_n                      )
             ,   .video_clk              (cmos_clk[i]                )
@@ -260,7 +288,7 @@ generate
 endgenerate
 
 generate 
-    for(genvar i = 0; i < 3; i = i + 1) begin
+    for(genvar i = 0; i < 5; i = i + 1) begin
         `ifndef USE_FIFO_IP begin
             async_fifo#(
                     .DSIZE              (AXI4_DATA_WIDTH            )  
@@ -341,6 +369,16 @@ axi_full_core #(
     ,   .cmos2_frd_din      (cmos_fifo_rd_data_out[2] )
     ,   .cmos2_frd_empty    ()
     ,   .cmos2_frd_cnt	    ()
+    ,   .cmos3_frd_rdy      (cmos_fifo_rd_enable[3] )
+    ,   .cmos3_frd_vld      ()
+    ,   .cmos3_frd_din      (cmos_fifo_rd_data_out[3] )
+    ,   .cmos3_frd_empty    ()
+    ,   .cmos3_frd_cnt	    ()
+    ,   .cmos4_frd_rdy      (cmos_fifo_rd_enable[4] )
+    ,   .cmos4_frd_vld      ()
+    ,   .cmos4_frd_din      (cmos_fifo_rd_data_out[4] )
+    ,   .cmos4_frd_empty    ()
+    ,   .cmos4_frd_cnt	    ()
 
 //----------------------------------------------------
 // backward FIFO write interface
@@ -353,11 +391,19 @@ axi_full_core #(
 //----------------------------------------------------
 // cmos burst handshake 
 	,	.cmos0_burst_valid  (cmos_burst_valid[0]    )
-	,	.cmos1_burst_valid  (cmos_burst_valid[1]    )
-	,	.cmos2_burst_valid  (cmos_burst_valid[2]    )
 	,	.cmos0_burst_ready  (cmos_burst_ready[0]    )
+
+	,	.cmos1_burst_valid  (cmos_burst_valid[1]    )
 	,	.cmos1_burst_ready  (cmos_burst_ready[1]    )
+	
+    ,	.cmos2_burst_valid  (cmos_burst_valid[2]    )
 	,	.cmos2_burst_ready  (cmos_burst_ready[2]    )
+	
+    ,	.cmos3_burst_valid  (cmos_burst_valid[3]    )
+	,	.cmos3_burst_ready  (cmos_burst_ready[3]    )
+	
+    ,	.cmos4_burst_valid  (cmos_burst_valid[4]    )
+	,	.cmos4_burst_ready  (cmos_burst_ready[4]    )
 
 //----------------------------------------------------
 // video burst handshake 
@@ -369,6 +415,8 @@ axi_full_core #(
 	,	.cmos0_vsync        (cmos_vsync[0]          )
 	,	.cmos1_vsync        (cmos_vsync[1]          )
 	,	.cmos2_vsync        (cmos_vsync[2]          )
+	,	.cmos3_vsync        (cmos_vsync[3]          )
+	,	.cmos4_vsync        (cmos_vsync[4]          )
 
 //----------------------------------------------------
 // video interface 

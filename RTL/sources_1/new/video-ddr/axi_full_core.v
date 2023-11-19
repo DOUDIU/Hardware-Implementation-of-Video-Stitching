@@ -204,6 +204,22 @@ module axi_full_core#(
     ,   input   wire [FAW:0] 	cmos2_frd_cnt	
 
 //----------------------------------------------------
+// forward FIFO3 read interface
+    ,   output  wire           	cmos3_frd_rdy  	
+    ,   input   wire           	cmos3_frd_vld  	
+    ,   input   wire [FDW-1:0] 	cmos3_frd_din  	
+    ,   input   wire           	cmos3_frd_empty	
+    ,   input   wire [FAW:0] 	cmos3_frd_cnt	
+
+//----------------------------------------------------
+// forward FIFO4 read interface
+    ,   output  wire           	cmos4_frd_rdy  	
+    ,   input   wire           	cmos4_frd_vld  	
+    ,   input   wire [FDW-1:0] 	cmos4_frd_din  	
+    ,   input   wire           	cmos4_frd_empty	
+    ,   input   wire [FAW:0] 	cmos4_frd_cnt	
+
+//----------------------------------------------------
 // backward FIFO write interface
     ,   input   wire           	video_bwr_rdy
     ,   output  reg            	video_bwr_vld
@@ -214,11 +230,15 @@ module axi_full_core#(
 //----------------------------------------------------
 // cmos burst handshake 
 	,	input   wire           	cmos0_burst_valid	
-	,	input   wire           	cmos1_burst_valid	
-	,	input   wire           	cmos2_burst_valid	
 	,	output	wire			cmos0_burst_ready
+	,	input   wire           	cmos1_burst_valid	
 	,	output	wire			cmos1_burst_ready
+	,	input   wire           	cmos2_burst_valid	
 	,	output	wire			cmos2_burst_ready	
+	,	input   wire           	cmos3_burst_valid	
+	,	output	wire			cmos3_burst_ready
+	,	input   wire           	cmos4_burst_valid	
+	,	output	wire			cmos4_burst_ready
 
 //----------------------------------------------------
 // video burst handshake 
@@ -230,6 +250,8 @@ module axi_full_core#(
 	,	input	wire			cmos0_vsync
 	,	input	wire			cmos1_vsync
 	,	input	wire			cmos2_vsync
+	,	input	wire			cmos3_vsync
+	,	input	wire			cmos4_vsync
 
 //----------------------------------------------------
 // video interface 
@@ -237,11 +259,11 @@ module axi_full_core#(
 );
 
 
-	wire           	cmos_frd_rdy  	[0 : 2]	;
-	wire           	cmos_frd_vld  	[0 : 2]	;
-	wire [FDW-1:0] 	cmos_frd_din  	[0 : 2]	;
-	wire           	cmos_frd_empty	[0 : 2]	;
-	wire [FAW:0] 	cmos_frd_cnt	[0 : 2]	;
+	wire           	cmos_frd_rdy  	[0 : 4]	;
+	wire           	cmos_frd_vld  	[0 : 4]	;
+	wire [FDW-1:0] 	cmos_frd_din  	[0 : 4]	;
+	wire           	cmos_frd_empty	[0 : 4]	;
+	wire [FAW:0] 	cmos_frd_cnt	[0 : 4]	;
 
 	assign	cmos0_frd_rdy  		=	cmos_frd_rdy  	[0]	;
 	assign	cmos_frd_vld  	[0]	=	cmos0_frd_vld  		;
@@ -261,21 +283,39 @@ module axi_full_core#(
 	assign	cmos_frd_empty	[2]	=	cmos2_frd_empty		;
 	assign	cmos_frd_cnt	[2]	=	cmos2_frd_cnt		;
 
-	wire           	cmos_burst_valid	[0 : 2]	;
-	reg				cmos_burst_ready	[0 : 2]	;
+	assign	cmos3_frd_rdy  		=	cmos_frd_rdy  	[3]	;
+	assign	cmos_frd_vld  	[3]	=	cmos3_frd_vld  		;
+	assign	cmos_frd_din  	[3]	=	cmos3_frd_din  		;
+	assign	cmos_frd_empty	[3]	=	cmos3_frd_empty		;
+	assign	cmos_frd_cnt	[3]	=	cmos3_frd_cnt		;
+
+	assign	cmos4_frd_rdy  		=	cmos_frd_rdy  	[4]	;
+	assign	cmos_frd_vld  	[4]	=	cmos4_frd_vld  		;
+	assign	cmos_frd_din  	[4]	=	cmos4_frd_din  		;
+	assign	cmos_frd_empty	[4]	=	cmos4_frd_empty		;
+	assign	cmos_frd_cnt	[4]	=	cmos4_frd_cnt		;
+
+	wire           	cmos_burst_valid	[0 : 4]	;
+	reg				cmos_burst_ready	[0 : 4]	;
 
 	assign	cmos_burst_valid[0]	= 	cmos0_burst_valid;
 	assign	cmos_burst_valid[1]	= 	cmos1_burst_valid;
 	assign	cmos_burst_valid[2]	= 	cmos2_burst_valid;
+	assign	cmos_burst_valid[3]	= 	cmos3_burst_valid;
+	assign	cmos_burst_valid[4]	= 	cmos4_burst_valid;
 	assign	cmos0_burst_ready	=	cmos_burst_ready[0];
 	assign	cmos1_burst_ready	=	cmos_burst_ready[1];
 	assign	cmos2_burst_ready	=	cmos_burst_ready[2];
+	assign	cmos3_burst_ready	=	cmos_burst_ready[3];
+	assign	cmos4_burst_ready	=	cmos_burst_ready[4];
 
-	wire			cmos_vsync [0 : 2];
+	wire			cmos_vsync [0 : 4];
 
 	assign	cmos_vsync[0]	=	cmos0_vsync;
 	assign	cmos_vsync[1]	=	cmos1_vsync;
 	assign	cmos_vsync[2]	=	cmos2_vsync;
+	assign	cmos_vsync[3]	=	cmos3_vsync;
+	assign	cmos_vsync[4]	=	cmos4_vsync;
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
 	// number of write or read transaction.
@@ -286,12 +326,16 @@ module axi_full_core#(
 	genvar i;
 	integer j;
 
-	parameter Cmos0_H = 960;
-	parameter Cmos0_V = 1080;
-	parameter Cmos1_H = 960;
-	parameter Cmos1_V = 540;
-	parameter Cmos2_H = 960;
-	parameter Cmos2_V = 540;
+	parameter Cmos0_H = 640;
+	parameter Cmos0_V = 360;
+	parameter Cmos1_H = 640;
+	parameter Cmos1_V = 360;
+	parameter Cmos2_H = 640;
+	parameter Cmos2_V = 240;
+	parameter Cmos3_H = 640;
+	parameter Cmos3_V = 240;
+	parameter Cmos4_H = 640;
+	parameter Cmos4_V = 240;
 	
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr_video0;
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr_video1;
@@ -300,26 +344,22 @@ module axi_full_core#(
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos0;
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos1;
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos2;
-	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos0_max;
-	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos1_max;
-	wire [C_M_AXI_ADDR_WIDTH-1 : 0]	axi_awaddr_cmos2_max;
-	assign axi_awaddr_cmos0_max = Cmos0_H * Cmos0_V * 4 - Cmos0_H * 4;
-	assign axi_awaddr_cmos1_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 - Cmos1_H * 4;
-	assign axi_awaddr_cmos2_max = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 - Cmos2_H * 4;
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos3;
+	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr_cmos4;
 
-	reg				cmos_vsync_d1[0:2];
-	reg				cmos_vsync_d2[0:2];
+	reg				cmos_vsync_d1[0:4];
+	reg				cmos_vsync_d2[0:4];
 
 	reg				video_vsync_d1;
 	reg				video_vsync_d2;
 	
-	reg				cmos_wr_buffer[0:2];
+	reg				cmos_wr_buffer[0:4];
 	wire    [31:0]	BUFFER0_MAX;
-	reg	 	[2:0]	current_write_cam = 0;
+	reg	 	[4:0]	current_write_cam = 0;
 	
-	assign BUFFER0_MAX = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4;
+	assign BUFFER0_MAX = Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 + Cmos3_H * Cmos3_V * 4 + Cmos4_H * Cmos4_V * 4;
 
-	generate for(i = 0; i < 3 ;i = i + 1) begin
+	generate for(i = 0; i < 5 ;i = i + 1) begin
 		always @(posedge M_AXI_ACLK) begin
 			if (M_AXI_ARESETN == 0) begin
 				cmos_vsync_d1[i]	<=	0;
@@ -344,7 +384,7 @@ module axi_full_core#(
 		end                                                                      
 	end   
 
-	generate for(i = 0; i < 3 ;i = i + 1) begin
+	generate for(i = 0; i < 5 ;i = i + 1) begin
 		always @(posedge M_AXI_ACLK) begin
 			if (M_AXI_ARESETN == 0) begin
 				cmos_wr_buffer[i]	<=	0;                         
@@ -360,7 +400,7 @@ module axi_full_core#(
 	wire			frd_rdy;
 
 	generate 
-		for(i = 0; i < 3; i = i + 1) begin
+		for(i = 0; i < 5; i = i + 1) begin
 			assign	cmos_frd_rdy[i] = frd_rdy & current_write_cam[i];
 		end
 	endgenerate
@@ -533,10 +573,16 @@ module axi_full_core#(
 			axi_awaddr	<=	axi_awaddr_cmos0 + (cmos_wr_buffer[0] ? BUFFER0_MAX : 0);
 		end
 		else if (cmos_burst_ready[1] & cmos_burst_valid[1]) begin
-			axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? BUFFER0_MAX : 0);
+			axi_awaddr	<=	axi_awaddr_cmos1 + (cmos_wr_buffer[1] ? BUFFER0_MAX : 0) + Cmos0_H * Cmos0_V * 4;
 		end
 		else if (cmos_burst_ready[2] & cmos_burst_valid[2]) begin
-			axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? BUFFER0_MAX : 0);
+			axi_awaddr	<=	axi_awaddr_cmos2 + (cmos_wr_buffer[2] ? BUFFER0_MAX : 0) + Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
+		end
+		else if (cmos_burst_ready[3] & cmos_burst_valid[3]) begin
+			axi_awaddr	<=	axi_awaddr_cmos3 + (cmos_wr_buffer[3] ? BUFFER0_MAX : 0) + Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4;
+		end
+		else if (cmos_burst_ready[4] & cmos_burst_valid[4]) begin
+			axi_awaddr	<=	axi_awaddr_cmos4 + (cmos_wr_buffer[4] ? BUFFER0_MAX : 0) + Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 + Cmos2_H * Cmos2_V * 4 + Cmos3_H * Cmos3_V * 4;
 		end
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
 			axi_awaddr <= axi_awaddr + burst_size_bytes;                   
@@ -645,25 +691,16 @@ module axi_full_core#(
 		end                           
 		//else if (wnext && axi_wlast)                                                  
 		//  axi_wdata <= 'b0;      
-		else if (M_AXI_AWREADY && axi_awvalid) begin
+		else begin
 			case(current_write_cam)
-				3'b001: 	axi_wdata <= cmos_frd_din[0];
-				3'b010: 	axi_wdata <= cmos_frd_din[1];
-				3'b100: 	axi_wdata <= cmos_frd_din[2];
+				5'b00001: 	axi_wdata <= cmos_frd_din[0];
+				5'b00010: 	axi_wdata <= cmos_frd_din[1];
+				5'b00100: 	axi_wdata <= cmos_frd_din[2];
+				5'b01000: 	axi_wdata <= cmos_frd_din[3];
+				5'b10000: 	axi_wdata <= cmos_frd_din[4];
 				default:	axi_wdata <= 0;
 			endcase
-		end                                                     
-		else if (wnext) begin         
-			case(current_write_cam)
-				3'b001: 	axi_wdata <= cmos_frd_din[0];
-				3'b010: 	axi_wdata <= cmos_frd_din[1];
-				3'b100: 	axi_wdata <= cmos_frd_din[2];
-				default:	axi_wdata <= 0;
-			endcase
-		end                                                   
-		else begin                                                                           
-			axi_wdata <= axi_wdata;
-		end                                                       
+		end                                                 
 	end    
 
 	assign	frd_rdy = (!axi_wlast) && ((M_AXI_AWREADY && axi_awvalid) || wnext);                                                   
@@ -744,10 +781,23 @@ module axi_full_core#(
 	        axi_araddr <= 	'b0;                                           
 		end
 		else if(video_burst_ready & video_burst_valid) begin
-			axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : BUFFER0_MAX);
+			if(axi_araddr_video0 >= (Cmos0_H * Cmos0_V * 4)) begin
+				axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[1] ? 0 : BUFFER0_MAX);
+			end
+			else begin
+				axi_araddr	<=	axi_araddr_video0 + (cmos_wr_buffer[0] ? 0 : BUFFER0_MAX);
+			end
 		end
 		else if((mst_exec_state  == INIT_READ_REGION_A) & reads_done) begin
-			axi_araddr	<=	axi_araddr_video1 + (axi_araddr_video1 >=  (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4) ? (cmos_wr_buffer[2] ? 0 : BUFFER0_MAX) : (cmos_wr_buffer[1] ? 0 : BUFFER0_MAX));
+			if(axi_araddr_video1 >=  (Cmos2_H * Cmos2_V * 4 + Cmos3_H * Cmos3_V * 4)) begin
+				axi_araddr	<=	axi_araddr_video1 + (cmos_wr_buffer[4] ? 0 : BUFFER0_MAX) + (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4);
+			end
+			else if(axi_araddr_video1 >=  (Cmos2_H * Cmos2_V * 4)) begin
+				axi_araddr	<=	axi_araddr_video1 + (cmos_wr_buffer[3] ? 0 : BUFFER0_MAX) + (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4);
+			end
+			else begin
+				axi_araddr	<=	axi_araddr_video1 + (cmos_wr_buffer[2] ? 0 : BUFFER0_MAX) + (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4);
+			end
 		end
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
 	    	axi_araddr 	<= 	axi_araddr + burst_size_bytes;
@@ -931,41 +981,63 @@ module axi_full_core#(
 		end                                                        
 	end
 
+//----------------------------------------------------------
+//read address for cmos
 	always @ ( posedge M_AXI_ACLK) begin
 		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[0] & !cmos_vsync_d1[0])) begin
 			axi_awaddr_cmos0	<=	0;
 		end
 		else if(cmos_burst_valid[0] & cmos_burst_ready[0]) begin
-			axi_awaddr_cmos0 	<=	(axi_awaddr_cmos0 >= axi_awaddr_cmos0_max) ? 0 : (axi_awaddr_cmos0 + Cmos0_H * 4);
+			axi_awaddr_cmos0 	<=	(axi_awaddr_cmos0 >= (Cmos0_H * Cmos0_V * 4 - Cmos0_H * 4)) ? 0 : (axi_awaddr_cmos0 + Cmos0_H * 4);
 		end
 	end
 	
 	always @ ( posedge M_AXI_ACLK) begin
 		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[1] & !cmos_vsync_d1[1])) begin
-			axi_awaddr_cmos1	<=	Cmos0_H * Cmos0_V * 4;
+			axi_awaddr_cmos1	<=	0;
 		end
 		else if(cmos_burst_valid[1] & cmos_burst_ready[1]) begin
-			axi_awaddr_cmos1 	<=	(axi_awaddr_cmos1 >= axi_awaddr_cmos1_max) ? (Cmos0_H * Cmos0_V * 4) : (axi_awaddr_cmos1 + Cmos1_H * 4);
+			axi_awaddr_cmos1 	<=	(axi_awaddr_cmos1 >= (Cmos1_H * Cmos1_V * 4 - Cmos1_H * 4)) ? 0 : (axi_awaddr_cmos1 + Cmos1_H * 4);
 		end
 	end
 	
 	always @ ( posedge M_AXI_ACLK) begin
 		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[2] & !cmos_vsync_d1[2])) begin
-			axi_awaddr_cmos2	<=	Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4;
+			axi_awaddr_cmos2	<=	0;
 		end
 		else if(cmos_burst_valid[2] & cmos_burst_ready[2]) begin
-			axi_awaddr_cmos2 	<=	(axi_awaddr_cmos2 >= axi_awaddr_cmos2_max) ? (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4) : (axi_awaddr_cmos2 + Cmos2_H * 4);
+			axi_awaddr_cmos2 	<=	(axi_awaddr_cmos2 >= (Cmos2_H * Cmos2_V * 4 - Cmos2_H * 4)) ? 0 : (axi_awaddr_cmos2 + Cmos2_H * 4);
+		end
+	end
+	
+	always @ ( posedge M_AXI_ACLK) begin
+		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[3] & !cmos_vsync_d1[3])) begin
+			axi_awaddr_cmos3	<=	0;
+		end
+		else if(cmos_burst_valid[3] & cmos_burst_ready[3]) begin
+			axi_awaddr_cmos3 	<=	(axi_awaddr_cmos3 >= (Cmos3_H * Cmos3_V * 4 - Cmos3_H * 4)) ? 0 : (axi_awaddr_cmos3 + Cmos3_H * 4);
+		end
+	end
+	
+	always @ ( posedge M_AXI_ACLK) begin
+		if ((M_AXI_ARESETN == 1'b0) | (cmos_vsync_d2[4] & !cmos_vsync_d1[4])) begin
+			axi_awaddr_cmos4	<=	0;
+		end
+		else if(cmos_burst_valid[4] & cmos_burst_ready[4]) begin
+			axi_awaddr_cmos4 	<=	(axi_awaddr_cmos4 >= (Cmos4_H * Cmos4_V * 4 - Cmos4_H * 4)) ? 0 : (axi_awaddr_cmos4 + Cmos4_H * 4);
 		end
 	end
 
+//----------------------------------------------------------
+//read address for video
 	always @ ( posedge M_AXI_ACLK) begin
 		if ((M_AXI_ARESETN == 1'b0) || init_read_pulse == 1'b1) begin
 			axi_araddr_video0	<=	0;
-			axi_araddr_video1	<=	Cmos0_H * Cmos0_V * 4;
+			axi_araddr_video1	<=	0;
 		end
 		else if((mst_exec_state  == INIT_READ_REGION_B) & reads_done) begin
-			axi_araddr_video0 <= (axi_araddr_video0 >= axi_awaddr_cmos0_max) ? 0 : axi_araddr_video0 + Cmos0_H * 4;
-			axi_araddr_video1 <= (axi_araddr_video1 >= axi_awaddr_cmos2_max) ? (Cmos0_H * Cmos0_V * 4) : (axi_araddr_video1 + Cmos1_H * 4);
+			axi_araddr_video0 <= (axi_araddr_video0 >= (Cmos0_H * Cmos0_V * 4 + Cmos1_H * Cmos1_V * 4 - Cmos1_H * 4)) ? 0 : (axi_araddr_video0 + Cmos0_H * 4);
+			axi_araddr_video1 <= (axi_araddr_video1 >= (Cmos2_H * Cmos2_V * 4 + Cmos3_H * Cmos3_V * 4 + Cmos4_H * Cmos4_V * 4 - Cmos4_H * 4)) ? 0 : (axi_araddr_video1 + Cmos2_H * 4);
 		end
 	end 
 	//implement master command interface state machine
@@ -978,7 +1050,7 @@ module axi_full_core#(
 			start_single_burst_write <= 1'b0;                                                                   
 			start_single_burst_read  <= 1'b0;
 			current_write_cam	<=	0;
-			for(j = 0; j < 3; j = j + 1)begin
+			for(j = 0; j < 5; j = j + 1)begin
 				cmos_burst_ready[j]	<=	0;
 			end
 			write_burst_counter_max	<=	0;
@@ -999,30 +1071,40 @@ module axi_full_core#(
 					read_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 					video_burst_ready <= 1;
 				end
-				else if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2]) begin
-					case({cmos_burst_valid[0] , cmos_burst_valid[1] , cmos_burst_valid[2]})
-						3'b100,3'b101,3'b110,3'b111 : begin
-							mst_exec_state  <= INIT_WRITE;
-							write_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-							cmos_burst_ready[0] <= 1'b1;
-							current_write_cam <= 3'b001;
-						end
-						3'b010,3'b011 : begin
-							mst_exec_state  <= INIT_WRITE;
-							write_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-							cmos_burst_ready[1] <= 1'b1;
-							current_write_cam <= 3'b010;
-						end
-						3'b001: begin
-							mst_exec_state  <= INIT_WRITE;
-							write_burst_counter_max	<=	(Cmos2_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
-							cmos_burst_ready[2] <= 1'b1;
-							current_write_cam <= 3'b100;
-						end
-						default: begin
-							mst_exec_state  <= IDLE;
-						end
-					endcase
+				else if(cmos_burst_valid[0] | cmos_burst_valid[1] | cmos_burst_valid[2] | cmos_burst_valid[3] | cmos_burst_valid[4]) begin
+					if(cmos_burst_valid[0]) begin
+						mst_exec_state  <= INIT_WRITE;
+						write_burst_counter_max	<=	(Cmos0_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						cmos_burst_ready[0] <= 1'b1;
+						current_write_cam <= 5'b00001;
+					end
+					else if(cmos_burst_valid[1]) begin
+						mst_exec_state  <= INIT_WRITE;
+						write_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						cmos_burst_ready[1] <= 1'b1;
+						current_write_cam <= 5'b00010;
+					end
+					else if(cmos_burst_valid[2]) begin
+						mst_exec_state  <= INIT_WRITE;
+						write_burst_counter_max	<=	(Cmos2_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						cmos_burst_ready[2] <= 1'b1;
+						current_write_cam <= 5'b00100;
+					end
+					else if(cmos_burst_valid[3]) begin
+						mst_exec_state  <= INIT_WRITE;
+						write_burst_counter_max	<=	(Cmos3_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						cmos_burst_ready[3] <= 1'b1;
+						current_write_cam <= 5'b01000;
+					end
+					else if(cmos_burst_valid[4]) begin
+						mst_exec_state  <= INIT_WRITE;
+						write_burst_counter_max	<=	(Cmos4_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						cmos_burst_ready[4] <= 1'b1;
+						current_write_cam <= 5'b10000;
+					end
+					else begin
+						mst_exec_state  <= IDLE;
+					end
 				end                                                                                           
 				else begin
 					mst_exec_state  <= IDLE;                                                            
@@ -1039,7 +1121,7 @@ module axi_full_core#(
 				else begin                                                                                         
 					mst_exec_state  <= INIT_WRITE;                                                              
 	
-					for(j = 0; j < 3; j = j + 1)begin
+					for(j = 0; j < 5; j = j + 1)begin
 						cmos_burst_ready[j]	<=	0;
 					end
 					
@@ -1053,7 +1135,7 @@ module axi_full_core#(
 				INIT_READ_REGION_A : begin
 					if (reads_done) begin
 						mst_exec_state <= INIT_READ_REGION_B;
-						read_burst_counter_max	<=	(Cmos1_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
+						read_burst_counter_max	<=	(Cmos2_H * 32) / (C_M_AXI_DATA_WIDTH * C_M_AXI_BURST_LEN);
 					end                                                                                           
 					else begin                                                                                         
 						mst_exec_state  <= INIT_READ_REGION_A;

@@ -94,14 +94,14 @@ initial begin
     M_AXI_ARESETN = 1'b1;
 end
 
-reg         cmos_clk    [0 : 2] = '{0,0,0};
-reg         cmos_rst_n  [0 : 2] = '{0,0,0};
-wire        cmos_vsync  [0 : 2];
-wire        cmos_href   [0 : 2];
-wire        cmos_clken  [0 : 2];
-wire [23:0] cmos_data   [0 : 2];
-wire [10:0] cmos_x_pos  [0 : 2];
-wire [10:0] cmos_y_pos  [0 : 2];
+reg         cmos_clk    [0 : 4] = '{0,0,0,0,0};
+reg         cmos_rst_n  [0 : 4] = '{0,0,0,0,0};
+wire        cmos_vsync  [0 : 4];
+wire        cmos_href   [0 : 4];
+wire        cmos_clken  [0 : 4];
+wire [23:0] cmos_data   [0 : 4];
+wire [10:0] cmos_x_pos  [0 : 4];
+wire [10:0] cmos_y_pos  [0 : 4];
 wire        video_vsync ;
 wire        video_hsync ;
 wire        video_de    ;
@@ -112,7 +112,7 @@ parameter cmos1_period = 10;
 parameter cmos2_period = 10;
 
 always#(cmos0_period/2) cmos_clk[0] = ~cmos_clk[0];
-initial #(20*cmos0_period) cmos_rst_n[0] = 1;
+initial #(4*cmos0_period) cmos_rst_n[0] = 1;
 
 always#(cmos1_period/2) cmos_clk[1] = ~cmos_clk[1];
 initial #(13*cmos1_period) cmos_rst_n[1] = 1;
@@ -120,14 +120,20 @@ initial #(13*cmos1_period) cmos_rst_n[1] = 1;
 always#(cmos2_period/2) cmos_clk[2] = ~cmos_clk[2];
 initial #(10*cmos2_period) cmos_rst_n[2] = 1;
 
+always#(cmos1_period/2) cmos_clk[3] = ~cmos_clk[3];
+initial #(13*cmos1_period) cmos_rst_n[3] = 1;
+
+always#(cmos2_period/2) cmos_clk[4] = ~cmos_clk[4];
+initial #(10*cmos2_period) cmos_rst_n[4] = 1;
+
 reg         video_clk   = 0;
 
-always#(3.37) video_clk = ~video_clk;
+always#(4) video_clk = ~video_clk;
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\tree.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(1080)
+		.PIC_PATH	("..\\pic\\1.bmp")
+	,	.IMG_HDISP 	(640)
+	,	.IMG_VDISP 	(360)
 )u_sim_cmos0(
         .clk            (cmos_clk[0]	)
     ,   .rst_n          (cmos_rst_n[0]	)
@@ -140,9 +146,9 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\cobweb.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(540)
+		.PIC_PATH	("..\\pic\\2.bmp")
+	,	.IMG_HDISP 	(640)
+	,	.IMG_VDISP 	(360)
 )u_sim_cmos1(
         .clk            (cmos_clk[1]	)
     ,   .rst_n          (cmos_rst_n[1]	)
@@ -155,9 +161,9 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\poster.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(540)
+		.PIC_PATH	("..\\pic\\3.bmp")
+	,	.IMG_HDISP 	(640)
+	,	.IMG_VDISP 	(240)
 )u_sim_cmos2(
         .clk            (cmos_clk[2]	)
     ,   .rst_n          (cmos_rst_n[2]	)
@@ -169,11 +175,41 @@ sim_cmos #(
 	,   .Y_POS          (cmos_y_pos[2]	)
 );
 
+sim_cmos #(
+		.PIC_PATH	("..\\pic\\4.bmp")
+	,	.IMG_HDISP 	(640)
+	,	.IMG_VDISP 	(240)
+)u_sim_cmos3(
+        .clk            (cmos_clk[3]	)
+    ,   .rst_n          (cmos_rst_n[3]	)
+	,   .CMOS_VSYNC     (cmos_vsync[3]	)
+	,   .CMOS_HREF      (cmos_href[3]	)
+	,   .CMOS_CLKEN     (cmos_clken[3]	)
+	,   .CMOS_DATA      (cmos_data[3]	)
+	,   .X_POS          (cmos_x_pos[3]	)
+	,   .Y_POS          (cmos_y_pos[3]	)
+);
+
+sim_cmos #(
+		.PIC_PATH	("..\\pic\\5.bmp")
+	,	.IMG_HDISP 	(640)
+	,	.IMG_VDISP 	(240)
+)u_sim_cmos4(
+        .clk            (cmos_clk[4]	)
+    ,   .rst_n          (cmos_rst_n[4]	)
+	,   .CMOS_VSYNC     (cmos_vsync[4]	)
+	,   .CMOS_HREF      (cmos_href[4]	)
+	,   .CMOS_CLKEN     (cmos_clken[4]	)
+	,   .CMOS_DATA      (cmos_data[4]	)
+	,   .X_POS          (cmos_x_pos[4]	)
+	,   .Y_POS          (cmos_y_pos[4]	)
+);
+
 video_to_pic #(
         .PIC_PATH       ("..\\pic\\outcom.bmp")
-    ,   .START_FRAME    (5                    )
-	,	.IMG_HDISP      (1920                 )
-	,	.IMG_VDISP      (1080                 )
+    ,   .START_FRAME    (4                    )
+	,	.IMG_HDISP      (1280                 )
+	,	.IMG_VDISP      (720                  )
     ,   .DATA_WIDTH     (24                   )
 )u_video_to_pic(
         .clk            (video_clk      )
@@ -186,7 +222,7 @@ video_to_pic #(
 
 video_stiching_top #(
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	    .C_M_AXI_BURST_LEN	    ( 16 )
+	    .C_M_AXI_BURST_LEN	    ( 32 )
 		// Thread ID Width
 	,   .C_M_AXI_ID_WIDTH	    ( 1 )
 		// Width of Address Bus
@@ -227,6 +263,18 @@ video_stiching_top #(
     ,   .cmos2_href  			(cmos_href [2] 	)
     ,   .cmos2_clken 			(cmos_clken[2] 	)
     ,   .cmos2_data  			(cmos_data [2] 	)
+
+	,	.cmos3_clk				(cmos_clk  [3]  )
+    ,   .cmos3_vsync 			(cmos_vsync[3] 	)
+    ,   .cmos3_href  			(cmos_href [3] 	)
+    ,   .cmos3_clken 			(cmos_clken[3] 	)
+    ,   .cmos3_data  			(cmos_data [3] 	)
+    
+	,	.cmos4_clk				(cmos_clk  [4]  )
+    ,   .cmos4_vsync 			(cmos_vsync[4] 	)
+    ,   .cmos4_href  			(cmos_href [4] 	)
+    ,   .cmos4_clken 			(cmos_clken[4] 	)
+    ,   .cmos4_data  			(cmos_data [4] 	)
 
 //----------------------------------------------------
 // Video port
