@@ -1,4 +1,4 @@
-module video_stiching_top#(
+module video_stitching_top#(
         //hdmi parameters
         parameter  H_SYNC   =  12'd40   
     ,   parameter  H_BACK   =  12'd220  
@@ -228,7 +228,22 @@ video_to_fifo_ctrl #(
     ,   .AXI_FULL_BURST_READY   (cmos_burst_ready       )
 );
 
-`ifndef SIMULATION begin
+`ifdef FIFO_IP begin
+    fifo_generator_0 u_async_forward_fifo (
+        .rst          (!cmos_vsync | !M_AXI_ARESETN),                  // input wire rst
+        .wr_clk       (cmos_clk               ),            // input wire wr_clk
+        .rd_clk       (M_AXI_ACLK             ),            // input wire rd_clk
+        .din          (cmos_fifo_wr_data_out  ),                  // input wire [127 : 0] din
+        .wr_en        (cmos_fifo_wr_enable    ),              // input wire wr_en
+        .rd_en        (cmos_fifo_rd_enable    ),              // input wire rd_en
+        .dout         (cmos_fifo_rd_data_out  ),                // output wire [127 : 0] dout
+        .full         (),                // output wire full
+        .empty        (),              // output wire empty
+        .wr_rst_busy  (),  // output wire wr_rst_busy
+        .rd_rst_busy  ()  // output wire rd_rst_busy
+        );
+    end
+`else begin
     async_fifo#(
             .DSIZE                  (AXI4_DATA_WIDTH        )  
         ,   .ASIZE                  (FIFO_AW                )  
@@ -248,21 +263,6 @@ video_to_fifo_ctrl #(
         ,   .rempty                 ()
         ,   .arempty                ()
     );
-    end
-`else begin
-    fifo_generator_0 u_async_forward_fifo (
-        .rst          (!cmos_vsync | !M_AXI_ARESETN),                  // input wire rst
-        .wr_clk       (cmos_clk               ),            // input wire wr_clk
-        .rd_clk       (M_AXI_ACLK             ),            // input wire rd_clk
-        .din          (cmos_fifo_wr_data_out  ),                  // input wire [127 : 0] din
-        .wr_en        (cmos_fifo_wr_enable    ),              // input wire wr_en
-        .rd_en        (cmos_fifo_rd_enable    ),              // input wire rd_en
-        .dout         (cmos_fifo_rd_data_out  ),                // output wire [127 : 0] dout
-        .full         (),                // output wire full
-        .empty        (),              // output wire empty
-        .wr_rst_busy  (),  // output wire wr_rst_busy
-        .rd_rst_busy  ()  // output wire rd_rst_busy
-        );
     end
 `endif
 
@@ -385,28 +385,7 @@ axi_full_core #(
     ,   .M_AXI_RREADY       (M_AXI_RREADY       )
 );
 
-`ifndef SIMULATION begin
-    async_fifo#(
-            .DSIZE                  (AXI4_DATA_WIDTH            )  
-        ,   .ASIZE                  (FIFO_AW + 1                )  
-        ,   .FALLTHROUGH            ("TRUE"                     )  
-    )u_async_backward_fifo(    
-            .wclk                   (M_AXI_ACLK                 )
-        ,   .wrst_n                 (video_fifo_rst_n           )
-        ,   .winc                   (video_fifo_wr_enable       )
-        ,   .wdata                  (video_fifo_wr_data_out     )
-        ,   .wfull                  ()
-        ,   .awfull                 ()
-
-        ,   .rclk                   (video_clk                  )
-        ,   .rrst_n                 (video_fifo_rst_n           ) 
-        ,   .rdata                  (video_fifo_rd_data_out     )
-        ,   .rinc                   (video_fifo_rd_enable       )
-        ,   .rempty                 (video_fifo_rd_empty        )
-        ,   .arempty                ()
-    );
-    end
-`else begin
+`ifdef FIFO_IP begin
     wire backward_fifo_full;
     wire backward_fifo_empty;
     wire [12:0]  rd_data_count;
@@ -428,25 +407,28 @@ axi_full_core #(
         .wr_rst_busy  (),  // output wire wr_rst_busy
         .rd_rst_busy  ()  // output wire rd_rst_busy
     );
-
-    ila_0 ila_back_fifo (
-            .clk    (M_AXI_ACLK    ) // input wire clk
-
-        ,   .probe1 (video_fifo_wr_data_out     ) // input wire [127:0]  probe1 
-        ,   .probe0 (video_fifo_wr_enable       ) // input wire [0:0]  probe0  
-        ,   .probe3 (video_fifo_rd_data_out     ) // input wire [127:0]  probe3
-        ,   .probe2 (video_fifo_rd_enable       ) // input wire [0:0]  probe2  
-        ,   .probe4 (backward_fifo_full         ) // input wire [0:0]  probe4 
-        ,   .probe5 (backward_fifo_empty        ) // input wire [0:0]  probe5 
-        ,   .probe6 (video_vsync                ) // input wire [0:0]  probe6 
-        ,   .probe7 (video_href                 ) // input wire [0:0]  probe7 
-        ,   .probe8 (video_de                   ) // input wire [0:0]  probe8 
-        ,   .probe9 (video_data                 ) // input wire [23:0]  probe9
-	    ,   .probe10(rd_data_count              ) // input wire [11:0]  probe10 
-	    ,   .probe11(wr_data_count              )  // input wire [11:0]  probe11
-        ,   .probe12(video_clk                  )
-    );
     end
+`else begin
+    async_fifo#(
+            .DSIZE                  (AXI4_DATA_WIDTH            )  
+        ,   .ASIZE                  (FIFO_AW + 1                )  
+        ,   .FALLTHROUGH            ("TRUE"                     )  
+    )u_async_backward_fifo(    
+            .wclk                   (M_AXI_ACLK                 )
+        ,   .wrst_n                 (video_fifo_rst_n           )
+        ,   .winc                   (video_fifo_wr_enable       )
+        ,   .wdata                  (video_fifo_wr_data_out     )
+        ,   .wfull                  ()
+        ,   .awfull                 ()
+
+        ,   .rclk                   (video_clk                  )
+        ,   .rrst_n                 (video_fifo_rst_n           ) 
+        ,   .rdata                  (video_fifo_rd_data_out     )
+        ,   .rinc                   (video_fifo_rd_enable       )
+        ,   .rempty                 (video_fifo_rd_empty        )
+        ,   .arempty                ()
+    );
+end
 `endif
 
 

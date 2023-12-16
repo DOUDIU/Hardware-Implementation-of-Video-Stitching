@@ -117,7 +117,6 @@ initial #1 video_clk = 1;
 always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
-		// .PIC_PATH	("../../../../../../pic/afternoon.bmp")
 		.PIC_PATH	("..\\pic\\eva.bmp")
 	,	.IMG_HDISP 	(1280)
 	,	.IMG_VDISP 	(720)
@@ -131,45 +130,6 @@ sim_cmos #(
 	,   .X_POS          (cmos_x_pos     )
 	,   .Y_POS          (cmos_y_pos     )
 );
-
-// wire vtc_vs_o;
-// wire vtc_hs_o;
-// wire vtc_de_o;
-
-// uivtc u_uivtc(
-//         .vtc_clk_i  (cmos_clk	    )
-//     ,   .vtc_rstn_i (cmos_rst_n     )
-//     ,   .vtc_vs_o   (vtc_vs_o       )
-//     ,   .vtc_hs_o   (vtc_hs_o       )
-//     ,   .vtc_de_o   (vtc_de_o       )
-// );
-
-// uitpg u_uitpg(
-// 	    .tpg_clk_i          (cmos_clk	        )
-// 	,   .tpg_rstn_i         (cmos_rst_n         )
-// 	,   .tpg_vs_i           (!vtc_vs_o          )
-// 	,   .tpg_hs_i           (!vtc_hs_o          )
-// 	,   .tpg_de_i           (vtc_de_o           )
-// 	,   .tpg_vs_o           (cmos_vsync         )
-// 	,   .tpg_hs_o           (cmos_href          )
-// 	,   .tpg_de_o           (cmos_clken         )
-// 	,   .tpg_data_o         (cmos_data          )
-// );
-
-// video_topic #(
-//         .PIC_PATH       ("..\\pic\\outcom2.bmp")
-//     ,   .START_FRAME    (2                    )
-// 	,	.IMG_HDISP      (960)//(2880                 )
-// 	,	.IMG_VDISP      (540)//(1080                 )
-//     ,   .DATA_WIDTH     (24                   )
-// )u_video_topic_test(
-//         .clk            (cmos_clk[1]	)//(video_clk      )
-//     ,   .rst_n          (1)
-//     ,   .video_vsync    (cmos_vsync[1]	)//(video_vsync    )
-//     ,   .video_hsync    (cmos_href[1]	)//(video_hsync    )
-//     ,   .video_de       (cmos_clken[1]	)//(video_de       )
-//     ,   .video_data     (cmos_data[1]	)//(video_data     )
-// );
 
 video_to_pic #(
         .PIC_PATH       ("..\\pic\\outcom.bmp")
@@ -186,37 +146,7 @@ video_to_pic #(
     ,   .video_data     (video_data     )
 );
 
-video_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom2.bmp")
-    ,   .START_FRAME    (7                    )
-	,	.IMG_HDISP      (1280                 )
-	,	.IMG_VDISP      (720                  )
-    ,   .DATA_WIDTH     (24                   )
-)u_video_to_pic1(
-        .clk            (video_clk      )
-    ,   .rst_n          (1)
-    ,   .video_vsync    (video_vsync    )
-    ,   .video_hsync    (video_hsync    )
-    ,   .video_de       (video_de       )
-    ,   .video_data     (video_data     )
-);
-
-video_to_pic #(
-        .PIC_PATH       ("..\\pic\\outcom3.bmp")
-    ,   .START_FRAME    (9                    )
-	,	.IMG_HDISP      (1280                 )
-	,	.IMG_VDISP      (720                  )
-    ,   .DATA_WIDTH     (24                   )
-)u_video_to_pic2(
-        .clk            (video_clk      )
-    ,   .rst_n          (1)
-    ,   .video_vsync    (video_vsync    )
-    ,   .video_hsync    (video_hsync    )
-    ,   .video_de       (video_de       )
-    ,   .video_data     (video_data     )
-);
-
-video_stiching_top #(
+video_stitching_top #(
         .AXI4_DATA_WIDTH        ( AXI_DATA_WIDTH)
         // Base address of targeted slave
 	,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
@@ -238,7 +168,7 @@ video_stiching_top #(
 	,   .C_M_AXI_RUSER_WIDTH	( 0 )
 	    // Width of User Response Bus
 	,   .C_M_AXI_BUSER_WIDTH	( 0 )
-)u_video_stiching_top(
+)u_video_stitching_top(
 //----------------------------------------------------
 // system port
         .rst_n					(M_AXI_ARESETN  )
