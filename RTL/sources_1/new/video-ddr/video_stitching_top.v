@@ -1,5 +1,5 @@
-`define USE_FIFO_IP
-module video_stiching_top#(
+// `define USE_FIFO_IP
+module video_stitching_top#(
         parameter Cmos0_H   =   960
     ,   parameter Cmos0_V   =   1080
 

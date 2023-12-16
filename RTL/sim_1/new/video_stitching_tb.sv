@@ -184,7 +184,7 @@ video_to_pic #(
     ,   .video_data     (video_data     )
 );
 
-video_stiching_top #(
+video_stitching_top #(
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	    .C_M_AXI_BURST_LEN	    ( 16 )
 		// Thread ID Width
@@ -203,7 +203,7 @@ video_stiching_top #(
 	,   .C_M_AXI_RUSER_WIDTH	( 0 )
 	    // Width of User Response Bus
 	,   .C_M_AXI_BUSER_WIDTH	( 0 )
-)u_video_stiching_top(
+)u_video_stitching_top(
 //----------------------------------------------------
 // system port
         .rst_n					(M_AXI_ARESETN  )

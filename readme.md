@@ -1,4 +1,6 @@
-### Video Stitching
+### Video Stitching Based on FPGA
+
+![outcom](pic/outcom.bmp)
 
 This repository consists of four branches, each of which is simulated with Questa sim and verified by the Xilinx FPGA board.
 
@@ -8,12 +10,6 @@ This repository consists of four branches, each of which is simulated with Quest
 > | Five_Frames               | Stitching five separate videos into one video.               |
 > | VMDA                      | Ping-pong read-write single video into DDR using AXI-4 interface. |
 > | DDR_Interface_Translation | Ping-pong read-write single video into DDR using APP interface. (Through AXI-4 to APP interface translation) |
-
-
-
-### Demonstration
-
-![outcom](pic/outcom.bmp)
 
 
 
