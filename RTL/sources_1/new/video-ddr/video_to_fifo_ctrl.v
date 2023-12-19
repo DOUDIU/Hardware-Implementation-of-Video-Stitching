@@ -62,7 +62,7 @@ always@(posedge video_clk or negedge video_rst_n) begin
 end
 
 always@(posedge video_clk or negedge video_rst_n) begin
-    if(!video_rst_n) begin
+    if((!video_rst_n) | (!video_vs_out)) begin
         buf_cnt    <=  0;
     end
     else if(video_de_out) begin

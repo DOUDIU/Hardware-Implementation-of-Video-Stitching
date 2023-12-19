@@ -96,7 +96,7 @@ always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN)begin
 end
 
 always@(posedge video_clk or negedge video_rst_n)begin
-    if(!video_rst_n)begin
+    if((!video_rst_n) | (!video_hs_out))begin
         shift_cnt <= 1'b0;
     end
     else if(data_req) begin
@@ -121,6 +121,7 @@ always@(posedge video_clk or negedge video_rst_n)begin
         pixel_data <= 1'b0;
     end
     else if(data_req) begin
+        //Warning : Just comment out the error case
         case(shift_cnt)
             2'b00:begin
                 pixel_data <= fifo_data_in[(AXI4_DATA_WIDTH - 32)+:24];

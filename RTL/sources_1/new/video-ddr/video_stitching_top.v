@@ -18,7 +18,7 @@ module video_stitching_top#(
 
         //the max depth of the fifo: 2^FIFO_AW
     ,   parameter FIFO_AW = 10
-		// AXI4 sink: Data Width as same as the data depth of the fifo
+		// AXI4 sink: Data Width as same as the data depth of the fifo (optinal: 128 64 32)
     ,   parameter AXI4_DATA_WIDTH = 128
 
 		// Base address of targeted slave
@@ -43,7 +43,7 @@ module video_stitching_top#(
 	,   parameter integer C_M_AXI_BUSER_WIDTH	= 0
 )(
 //----------------------------------------------------
-// system port
+// Optional Nonnection
         input           rst_n
 
 //----------------------------------------------------
@@ -52,9 +52,7 @@ module video_stitching_top#(
     ,   input           cmos_vsync          
     ,   input           cmos_href           
     ,   input           cmos_clken          
-    ,   input   [23:0]  cmos_data           
-    // ,   input   [10:0]  cmos_x_pos          
-    // ,   input   [10:0]  cmos_y_pos           
+    ,   input   [23:0]  cmos_data          
 
 //----------------------------------------------------
 // Video port
@@ -189,7 +187,6 @@ module video_stitching_top#(
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
 );
-`define SIMULATION
 
 wire                                cmos_burst_valid        ;
 wire                                cmos_burst_ready        ;

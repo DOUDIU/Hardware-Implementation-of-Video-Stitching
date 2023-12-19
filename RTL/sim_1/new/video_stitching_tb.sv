@@ -146,6 +146,7 @@ video_to_pic #(
     ,   .video_data     (video_data     )
 );
 
+//Top Module
 video_stitching_top #(
         .AXI4_DATA_WIDTH        ( AXI_DATA_WIDTH)
         // Base address of targeted slave
