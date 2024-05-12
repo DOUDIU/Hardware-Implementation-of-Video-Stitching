@@ -4,11 +4,9 @@
 `timescale 1 ns / 1 ps
 `default_nettype none
 
-module rptr_empty
-
-    #(
+module rptr_empty#(
     parameter ADDRSIZE = 4
-    )(
+)(
     input  wire                rclk,
     input  wire                rrst_n,
     input  wire                rinc,
@@ -17,7 +15,7 @@ module rptr_empty
     output reg                 arempty,
     output wire [ADDRSIZE-1:0] raddr,
     output reg  [ADDRSIZE  :0] rptr
-    );
+);
 
     reg  [ADDRSIZE:0] rbin;
     wire [ADDRSIZE:0] rgraynext, rbinnext, rgraynextm1;
