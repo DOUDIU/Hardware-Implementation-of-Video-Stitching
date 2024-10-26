@@ -17,7 +17,7 @@ This repository consists of four branches, each of which is simulated with Quest
 
 The tree map of this project is shown as below:
 
-> - vivado #vivado project folder
+> - vivado #vivado project
 > - pic #picture
 > - modelsim #
 >   - wave.do #the modelsim wave file
@@ -29,8 +29,6 @@ The tree map of this project is shown as below:
 
 
 ### Tips
-
-For convenience, the Async FIFO used in this repository utilizes the Xilinx FIFO IP to enhance timing performance. The HDL Async FIFO is provided in the **RTL** folder for replacement.
 
 Considering the universality of the AXI interface, this project can be conveniently transplanted into any kind of ZYNQ or FPGA platform. The following are the corresponding application frameworks on ZYNQ or FPGA.
 
