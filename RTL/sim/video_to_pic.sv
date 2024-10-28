@@ -86,7 +86,7 @@ initial begin
     iBmpSize        = {rBmpData[ 5],rBmpData[ 4],rBmpData[ 3],rBmpData[ 2]};
     iDataStartIndex = {rBmpData[13],rBmpData[12],rBmpData[11],rBmpData[10]};
     $fclose(iBmpFileId);
-    
+
 //---------------------------------------------	
 //waiting for the start frame
     wait(frame_cnt == START_FRAME);

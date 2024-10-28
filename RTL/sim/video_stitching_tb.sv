@@ -125,9 +125,9 @@ reg         video_clk   = 0;
 always#(3.37) video_clk = ~video_clk;
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\tree.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(1080)
+		.PIC_PATH	    ("..\\pic\\tree.bmp")
+	,	.IMG_HDISP 	    (960)
+	,	.IMG_VDISP 	    (1080)
 )u_sim_cmos0(
         .clk            (cmos_clk[0]	)
     ,   .rst_n          (cmos_rst_n[0]	)
@@ -140,9 +140,9 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\cobweb.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(540)
+		.PIC_PATH	    ("..\\pic\\poster.bmp")
+	,	.IMG_HDISP 	    (960)
+	,	.IMG_VDISP 	    (540)
 )u_sim_cmos1(
         .clk            (cmos_clk[1]	)
     ,   .rst_n          (cmos_rst_n[1]	)
@@ -155,9 +155,9 @@ sim_cmos #(
 );
 
 sim_cmos #(
-		.PIC_PATH	("..\\pic\\poster.bmp")
-	,	.IMG_HDISP 	(960)
-	,	.IMG_VDISP 	(540)
+		.PIC_PATH	    ("..\\pic\\cobweb.bmp")
+	,	.IMG_HDISP 	    (960)
+	,	.IMG_VDISP 	    (540)
 )u_sim_cmos2(
         .clk            (cmos_clk[2]	)
     ,   .rst_n          (cmos_rst_n[2]	)
