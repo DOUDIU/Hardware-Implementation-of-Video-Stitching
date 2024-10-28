@@ -105,6 +105,7 @@ initial begin
         $fwrite(iBmpFileId,"%u",rBmpWord);
     end
     $fclose(iBmpFileId);
+    $stop;
 end
 
 

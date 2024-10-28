@@ -1,7 +1,5 @@
 ### Video Stitching Based on FPGA
 
-![outcom](pic/outcom.bmp)
-
 This repository consists of four branches, each of which is simulated with Questa sim and verified by the Xilinx FPGA board.
 
 > | Branch                    | Functional Description                                       |
@@ -11,7 +9,7 @@ This repository consists of four branches, each of which is simulated with Quest
 > | VMDA                      | Ping-pong read-write single video into DDR using AXI-4 interface. |
 > | DDR_Interface_Translation | Ping-pong read-write single video into DDR using APP interface. (Through AXI-4 to APP interface translation) |
 
-
+![outcom](pic/outcom.bmp)
 
 ### Project Structure
 
@@ -22,9 +20,8 @@ The tree map of this project is shown as below:
 > - modelsim #
 >   - wave.do #the modelsim wave file
 > - RTL #all necessary code
->   - constrs_1 #fpga constrain files
->   - sim_1 #simulation files
->   - source_1 #source code
+>   - sim #simulation files
+>   - source #source code
 
 
 
